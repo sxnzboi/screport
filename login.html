@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบผู้ดูแล | ReportCouncil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .login-container {
+            max-width: 420px;
+            margin: 100px auto;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header .icon-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), #7c3aed);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
+        }
+        .login-header .icon-circle i {
+            font-size: 2rem;
+            color: white;
+        }
+        .login-header h1 {
+            background: linear-gradient(135deg, var(--text-main), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .login-badge {
+            display: inline-block;
+            background: rgba(79,70,229,0.1);
+            color: var(--primary-color);
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: color var(--transition-speed);
+        }
+        .back-link a:hover {
+            color: var(--primary-color);
+        }
+
+        @media (max-width: 768px) {
+            .login-container { margin: 60px auto; padding: 0 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="container glass nav-container">
+            <a href="index.html" class="mobile-back-btn" aria-label="กลับหน้าแรก">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div class="logo nav-logo-center">
+                <i class="fa-solid fa-bullhorn"></i>
+                Report<span>Council</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">หน้าแรก</a>
+            </div>
+            <div class="nav-spacer"></div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="login-container fade-in-up">
+            <div class="login-header">
+                <div class="icon-circle">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+                <span class="login-badge"><i class="fa-solid fa-shield-halved"></i> Admin Only</span>
+                <h1>เข้าสู่ระบบผู้ดูแล</h1>
+                <p class="text-muted">สำหรับเจ้าหน้าที่สภานักศึกษาเท่านั้น</p>
+            </div>
+
+            <div class="glass glass-card">
+                <form id="authForm">
+                    <div class="form-group">
+                        <label for="username"><i class="fa-solid fa-user" style="margin-right: 6px; opacity: 0.6;"></i>ชื่อผู้ใช้ (Username)</label>
+                        <input type="text" id="username" class="form-control" placeholder="admin" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password"><i class="fa-solid fa-key" style="margin-right: 6px; opacity: 0.6;"></i>รหัสผ่าน</label>
+                        <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+
+                    <div id="auth-error" class="mb-3" style="color: #ef4444; font-size: 0.88rem; display: none; background: rgba(239,68,68,0.08); padding: 10px 14px; border-radius: 10px;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span id="error-text">ข้อผิดพลาด</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="login-btn" style="width: 100%; padding: 14px; font-size: 1.05rem; margin-top: 10px;">
+                        <i class="fa-solid fa-right-to-bracket" style="margin-right: 8px;"></i> เข้าสู่ระบบ
+                    </button>
+                </form>
+
+                <div class="back-link">
+                    <a href="index.html"><i class="fa-solid fa-arrow-left"></i> กลับไปหน้าหลัก</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <script>
+        document.getElementById('authForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('auth-error');
+            const errorText = document.getElementById('error-text');
+            const loginBtn = document.getElementById('login-btn');
+
+            errorDiv.style.display = 'none';
+            loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i> กำลังตรวจสอบ...';
+            loginBtn.disabled = true;
+
+            try {
+                // ค้นหาผู้ใช้จาก Firestore Collection 'users'
+                const db = firebase.firestore();
+                const usersRef = db.collection('users');
+                const snapshot = await usersRef.where('username', '==', username).get();
+
+                if (snapshot.empty) {
+                    throw new Error("ไม่พบชื่อผู้ใช้นี้ในระบบ");
+                }
+
+                let userData = null;
+                let userId = null;
+
+                snapshot.forEach(doc => {
+                    userData = doc.data();
+                    userId = doc.id;
+                });
+
+                // ตรวจสอบรหัสผ่าน (เก็บแบบ Plain text ตามที่คุณต้องการ)
+                if (userData.password !== password) {
+                    throw new Error("รหัสผ่านไม่ถูกต้อง");
+                }
+
+                // บันทึก Session ลง LocalStorage เพื่อให้หน้า Admin รู้ว่าล็อกอินแล้ว
+                localStorage.setItem('rep_user', JSON.stringify({
+                    uid: userId,
+                    username: userData.username,
+                    email: userData.email || '',
+                    role: userData.role || 'admin'
+                }));
+
+                window.location.href = 'admin.html';
+            } catch (error) {
+                errorDiv.style.display = 'block';
+                errorText.textContent = error.message || 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
+                loginBtn.innerHTML = '<i class="fa-solid fa-right-to-bracket" style="margin-right: 8px;"></i> เข้าสู่ระบบ';
+                loginBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

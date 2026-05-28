@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แจ้งเรื่องร้องเรียน | ReportCouncil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .form-container {
+            max-width: 700px;
+            margin: 0 auto 60px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .file-upload {
+            border: 2px dashed var(--border-color);
+            padding: 40px 20px;
+            text-align: center;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+            background: rgba(255,255,255,0.5);
+        }
+        
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background: rgba(79, 70, 229, 0.05);
+        }
+        
+        .file-upload i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="container glass nav-container">
+            <a href="index.html" class="mobile-back-btn" aria-label="กลับหน้าแรก">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div class="logo nav-logo-center">
+                <i class="fa-solid fa-bullhorn"></i>
+                Report<span>Council</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">หน้าแรก</a>
+                <a href="submit.html" class="active">แจ้งเรื่องร้องเรียน</a>
+                <a href="dashboard.html">ติดตามสถานะ</a>
+            </div>
+            <!-- Spacer to balance back button on mobile -->
+            <div class="nav-spacer"></div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="form-container fade-in-up">
+            <div class="page-header">
+                <h1 class="mb-2">แจ้งเรื่องร้องเรียน / เสนอแนะ</h1>
+                <p class="text-muted">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อให้หน่วยงานที่เกี่ยวข้องดำเนินการได้อย่างถูกต้อง</p>
+            </div>
+
+            <div class="glass glass-card">
+                <form id="complaintForm">
+                    <div class="form-group">
+                        <label for="title">หัวข้อเรื่องร้องเรียน <span style="color:red">*</span></label>
+                        <input type="text" id="title" class="form-control" placeholder="เช่น แอร์ในห้องเรียนอาคาร 5 ไม่เย็น" required>
+                    </div>
+
+                    <div class="grid grid-cols-2">
+                        <div class="form-group">
+                            <label for="category">หมวดหมู่ <span style="color:red">*</span></label>
+                            <select id="category" class="form-control" required>
+                                <option value="" disabled selected>เลือกหมวดหมู่...</option>
+                                <option value="facilities">อาคารสถานที่ / สภาพแวดล้อม</option>
+                                <option value="academic">การเรียนการสอน</option>
+                                <option value="it">ระบบสารสนเทศ / อินเทอร์เน็ต</option>
+                                <option value="services">บริการของมหาวิทยาลัย</option>
+                                <option value="other">อื่นๆ</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">สถานที่เกิดเหตุ</label>
+                            <input type="text" id="location" class="form-control" placeholder="เช่น อาคาร 5 ห้อง 502">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description">รายละเอียดเพิ่มเติม <span style="color:red">*</span></label>
+                        <textarea id="description" class="form-control" placeholder="อธิบายรายละเอียดของปัญหาที่คุณพบเจอ..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>แนบรูปภาพหรือไฟล์หลักฐาน (ถ้ามี)</label>
+                        <div class="file-upload" id="fileUploadContainer" onclick="document.getElementById('fileInput').click()" style="cursor: pointer;">
+                            <i class="fa-solid fa-cloud-arrow-up" id="uploadIcon"></i>
+                            <p id="uploadText">คลิกเพื่ออัพโหลด หรือ ลากไฟล์มาวางที่นี่</p>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;" id="uploadDesc">รองรับไฟล์ JPG, PNG ขนาดไม่เกิน 5MB</p>
+                            <img id="imagePreview" style="display:none; max-width: 100%; max-height: 200px; margin-top: 15px; border-radius: 8px; margin-left: auto; margin-right: auto;" />
+                            <input type="file" id="fileInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="padding: 15px; background: rgba(0,0,0,0.03); border-radius: 10px;">
+                        <label class="toggle-wrapper">
+                            <input type="checkbox" id="isAnonymous" class="toggle-checkbox">
+                            <span>ต้องการปกปิดตัวตน (Anonymous)</span>
+                        </label>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px; margin-left: 54px;">หากเลือกเปิดใช้งาน ข้อมูลส่วนตัวของคุณจะไม่ถูกเปิดเผยต่อเจ้าหน้าที่</p>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 30px;">
+                        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 15px; font-size: 1.1rem;">
+                            ส่งเรื่องร้องเรียน <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Premium Bottom Navigation Bar for Mobile -->
+    <div class="bottom-nav">
+        <a href="index.html" class="bottom-nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span>หน้าแรก</span>
+        </a>
+        <a href="submit.html" class="bottom-nav-item active">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>แจ้งเรื่อง</span>
+        </a>
+        <a href="dashboard.html" class="bottom-nav-item">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>ติดตามสถานะ</span>
+        </a>
+    </div>
+
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

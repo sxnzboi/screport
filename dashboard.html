@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ติดตามสถานะ | ReportCouncil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 30px;
+        }
+        
+        .stats-container {
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+        
+        .complaint-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .complaint-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 25px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-speed);
+        }
+        
+        .complaint-card:hover {
+            transform: translateX(5px);
+            background: white;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .complaint-info h4 {
+            font-size: 1.1rem;
+            margin-bottom: 5px;
+        }
+        
+        .complaint-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 15px;
+        }
+        
+        .complaint-meta span {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="container glass nav-container">
+            <a href="index.html" class="mobile-back-btn" aria-label="กลับหน้าแรก">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div class="logo nav-logo-center">
+                <i class="fa-solid fa-bullhorn"></i>
+                Report<span>Council</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">หน้าแรก</a>
+                <a href="submit.html">แจ้งเรื่องร้องเรียน</a>
+                <a href="dashboard.html" class="active">ติดตามสถานะ</a>
+            </div>
+            <!-- Spacer to balance back button on mobile -->
+            <div class="nav-spacer"></div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="dashboard-header fade-in-up">
+            <div>
+                <h1 class="mb-1">เรื่องร้องเรียนของฉัน</h1>
+                <p class="text-muted">ติดตามความคืบหน้าของเรื่องที่คุณได้แจ้งไว้</p>
+            </div>
+            <a href="submit.html" class="btn btn-primary btn-icon">
+                <i class="fa-solid fa-plus"></i> แจ้งเรื่องใหม่
+            </a>
+        </div>
+
+        <section class="stats-container grid grid-cols-3 fade-in-up" style="animation-delay: 0.1s;">
+            <div class="glass glass-card stat-card">
+                <div class="stat-number" id="stat-total">0</div>
+                <p class="text-muted">เรื่องทั้งหมด</p>
+            </div>
+            <div class="glass glass-card stat-card">
+                <div class="stat-number" id="stat-pending" style="color: var(--status-pending)">0</div>
+                <p class="text-muted">รอดำเนินการ</p>
+            </div>
+            <div class="glass glass-card stat-card">
+                <div class="stat-number" id="stat-resolved" style="color: var(--status-resolved)">0</div>
+                <p class="text-muted">แก้ไขแล้ว</p>
+            </div>
+        </section>
+
+        <section class="glass glass-card fade-in-up" style="animation-delay: 0.2s;">
+            <h3 class="mb-3">รายการล่าสุด</h3>
+            <div id="complaintsContainer" class="complaint-list">
+                <!-- Data will be populated here by JavaScript -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Premium Bottom Navigation Bar for Mobile -->
+    <div class="bottom-nav">
+        <a href="index.html" class="bottom-nav-item">
+            <i class="fa-solid fa-house"></i>
+            <span>หน้าแรก</span>
+        </a>
+        <a href="submit.html" class="bottom-nav-item">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>แจ้งเรื่อง</span>
+        </a>
+        <a href="dashboard.html" class="bottom-nav-item active">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>ติดตามสถานะ</span>
+        </a>
+    </div>
+
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

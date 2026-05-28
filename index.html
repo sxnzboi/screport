@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReportCouncil | มหาวิทยาลัย</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== HERO ===== */
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, var(--text-main), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        .hero-actions {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .features { padding: 20px 0 60px; }
+        .feature-icon {
+            width: 60px; height: 60px;
+            border-radius: 15px;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary-color);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; margin-bottom: 20px;
+        }
+
+        /* ===== SECTION HEADER ===== */
+        .section-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .section-header h2 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, var(--text-main), var(--primary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+        .section-header p { color: var(--text-muted); }
+        .section-tag {
+            display: inline-block;
+            background: rgba(79,70,229,0.1);
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 5px 14px;
+            border-radius: 20px;
+            margin-bottom: 12px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* ===== COUNCIL GRID ===== */
+        .council-section { padding: 20px 0 80px; }
+        .council-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        /* ===== FLIP CARD ===== */
+        .flip-card {
+            height: 280px;
+            perspective: 1000px;
+            -webkit-perspective: 1000px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent; /* Remove mobile touch blue tint */
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%; height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+            will-change: transform;
+        }
+        
+        /* Active flip class triggered via JS without layout jump */
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+            -webkit-transform: rotateY(180deg);
+        }
+
+        /* Hover behavior for desktop screens */
+        @media (hover: hover) {
+            .flip-card:hover .flip-card-inner {
+                transform: rotateY(180deg);
+                -webkit-transform: rotateY(180deg);
+            }
+        }
+
+        /* Subtle modern hover lift & glowing border effect */
+        .flip-card {
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        .flip-card:hover {
+            transform: translateY(-6px);
+        }
+        .flip-card:active {
+            transform: translateY(-2px);
+        }
+
+        .flip-card-front,
+        .flip-card-back {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border-radius: 18px;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            -webkit-transform-style: preserve-3d;
+        }
+
+        /* Front side with Image Background & Frosted Glass Bottom Overlay */
+        .flip-card-front {
+            background-color: #f3f4f6;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            position: relative;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+
+        /* Fallback Colored Gradient if image is not loaded or missing */
+        .av-bg-1  { background-image: linear-gradient(135deg, #e0e7ff, #c7d2fe); }
+        .av-bg-2  { background-image: linear-gradient(135deg, #fce7f3, #fbcfe8); }
+        .av-bg-3  { background-image: linear-gradient(135deg, #e0f2fe, #bae6fd); }
+        .av-bg-4  { background-image: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+        .av-bg-5  { background-image: linear-gradient(135deg, #fef3c7, #fde68a); }
+        .av-bg-6  { background-image: linear-gradient(135deg, #fee2e2, #fecaca); }
+        .av-bg-7  { background-image: linear-gradient(135deg, #ede9fe, #ddd6fe); }
+        .av-bg-8  { background-image: linear-gradient(135deg, #ccfbf1, #99f6e4); }
+        .av-bg-9  { background-image: linear-gradient(135deg, #ffedd5, #fed7aa); }
+        .av-bg-10 { background-image: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+        .av-bg-11 { background-image: linear-gradient(135deg, #f3e8ff, #e9d5ff); }
+        .av-bg-12 { background-image: linear-gradient(135deg, #dcfce7, #bbf7d0); }
+        .av-bg-13 { background-image: linear-gradient(135deg, #fae8ff, #f5d0fe); }
+        .av-bg-14 { background-image: linear-gradient(135deg, #ffedd5, #fed7aa); }
+
+        .member-avatar-fallback {
+            position: absolute;
+            top: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #4f46e5;
+            background: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 1;
+        }
+
+        /* Hide fallback text letter inside the avatar if card has a real background image */
+        .flip-card-front[style*="background-image"] .member-avatar-fallback {
+            display: none;
+        }
+
+        /* Frosted Glass Bottom Overlay */
+        .card-front-overlay {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-top: 1px solid rgba(255,255,255,0.4);
+            padding: 14px 10px;
+            width: 100%;
+            text-align: center;
+            z-index: 2;
+        }
+        .member-name-front {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: #1f2937;
+            margin-bottom: 2px;
+        }
+        .member-role-front {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: #4f46e5;
+            margin-bottom: 6px;
+        }
+        .flip-hint {
+            font-size: 0.65rem;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        /* Back side (Full Detail on color gradient) */
+        .flip-card-back {
+            background: linear-gradient(135deg, var(--primary-color), #7c3aed);
+            color: white;
+            transform: rotateY(180deg);
+            -webkit-transform: rotateY(180deg);
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            padding: 24px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-align: center;
+        }
+        .back-name {
+            font-size: 1.05rem;
+            font-weight: 800;
+            line-height: 1.3;
+        }
+        .back-detail {
+            font-size: 0.78rem;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .back-detail i { font-size: 0.7rem; opacity: 0.8; }
+        .back-divider {
+            width: 40px; height: 2px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 2px;
+            margin: 4px auto;
+        }
+        .back-position-badge {
+            background: rgba(255,255,255,0.25);
+            border: 1px solid rgba(255,255,255,0.4);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .council-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 768px) {
+            .hero { padding: 40px 0 30px; }
+            .hero h1 { font-size: 2.2rem; }
+            .hero p { font-size: 1rem; padding: 0 10px; }
+            .hero-actions { flex-direction: column; padding: 0 20px; }
+            .hero-actions .btn { width: 100%; }
+            .council-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+            .flip-card { height: 250px; }
+            .section-header h2 { font-size: 1.6rem; }
+        }
+        @media (max-width: 400px) {
+            .council-grid { gap: 10px; }
+            .flip-card { height: 230px; }
+            .member-avatar-fallback { width: 54px; height: 54px; font-size: 1.5rem; top: 30px; }
+        }
+    </style>
+    <script>
+        // ฟังก์ชันสำหรับ toggle การกลับหน้าการ์ดอย่างปลอดภัยโดยไม่เลื่อนหน้าจอ
+        function handleCardFlip(event, element) {
+            // สลับคลาสเพื่อพลิกการ์ด 3D อยู่กับที่
+            element.classList.toggle('flipped');
+        }
+    </script>
+</head>
+<body>
+
+    <nav>
+        <div class="container glass nav-container">
+            <div class="logo">
+                <i class="fa-solid fa-bullhorn"></i>
+                Report<span>Council</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html" class="active">หน้าแรก</a>
+                <a href="submit.html">แจ้งเรื่องร้องเรียน</a>
+                <a href="dashboard.html">ติดตามสถานะ</a>
+            </div>
+            <div>
+                <a href="submit.html" class="btn btn-primary">เริ่มต้นใช้งาน</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+
+        <!-- Hero -->
+        <section class="hero fade-in-up">
+            <h1>เสียงของคุณ<br>มีความหมาย</h1>
+            <p>ระบบรับเรื่องร้องเรียนและข้อเสนอแนะของมหาวิทยาลัยสงขลานครินทร์ <br>เพื่อการพัฒนาและแก้ไขปัญหาอย่างโปร่งใสและรวดเร็ว</p>
+            <div class="hero-actions">
+                <a href="submit.html" class="btn btn-primary btn-icon">
+                    <i class="fa-solid fa-paper-plane"></i> แจ้งเรื่องร้องเรียน
+                </a>
+                <a href="dashboard.html" class="btn btn-secondary btn-icon">
+                    <i class="fa-solid fa-magnifying-glass"></i> ติดตามสถานะ
+                </a>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="features grid grid-cols-3 fade-in-up" style="animation-delay: 0.2s;">
+            <div class="glass glass-card">
+                <div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
+                <h3 class="mb-2">รวดเร็วและตรงประเด็น</h3>
+                <p class="text-muted">เรื่องร้องเรียนของคุณจะถูกส่งตรงถึงหน่วยงานที่รับผิดชอบโดยผ่านสภา เพื่อส่งเรื่องร้องเรียนพร้อมรีบแก้ไขปัญหาที่รวดเร็วที่สุด</p>
+            </div>
+            <div class="glass glass-card">
+                <div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <h3 class="mb-2">รักษาความลับ</h3>
+                <p class="text-muted">คุณสามารถเลือกที่จะไม่เปิดเผยตัวตนได้ เพื่อความสบายใจและความปลอดภัยในการให้ข้อมูล</p>
+            </div>
+            <div class="glass glass-card">
+                <div class="feature-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <h3 class="mb-2">ติดตามได้ทุกขั้นตอน</h3>
+                <p class="text-muted">ระบบมีสถานะอัพเดทให้คุณทราบว่าเรื่องร้องเรียนของคุณอยู่ในขั้นตอนใดของการดำเนินการ</p>
+            </div>
+        </section>
+
+    
+
+    </main>
+
+    <footer style="text-align: center; padding: 40px 20px; font-size: 0.75rem; color: #9ca3af;">
+        &copy; 2026 ReportCouncil. <a href="login.html" style="color: inherit; text-decoration: none; opacity: 0.3; transition: opacity 0.3s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.3'">Admin Login</a>
+    </footer>
+
+    <!-- Premium Bottom Navigation Bar for Mobile -->
+    <div class="bottom-nav">
+        <a href="index.html" class="bottom-nav-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>หน้าแรก</span>
+        </a>
+        <a href="submit.html" class="bottom-nav-item">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span>แจ้งเรื่อง</span>
+        </a>
+        <a href="dashboard.html" class="bottom-nav-item">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>ติดตามสถานะ</span>
+        </a>
+    </div>
+
+</body>
+</html>
