@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบผู้ใช้ | ReportCouncil</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <style>
+        .login-container {
+            max-width: 460px;
+            margin: 60px auto;
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header .icon-circle {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+        }
+        .login-header .icon-circle i {
+            font-size: 2.2rem;
+            color: white;
+        }
+        .login-header h1 {
+            background: linear-gradient(135deg, var(--text-main), #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.8rem;
+        }
+        .login-badge {
+            display: inline-block;
+            background: rgba(16,185,129,0.1);
+            color: #10b981;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .back-link a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: color var(--transition-speed);
+        }
+        .back-link a:hover {
+            color: var(--primary-color);
+        }
+
+        /* Tab switcher */
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: rgba(0,0,0,0.04);
+            padding: 4px;
+        }
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            text-align: center;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-family: "Kanit", sans-serif;
+        }
+        .auth-tab.active {
+            background: white;
+            color: var(--text-main);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        /* Email input styling */
+        .email-input-group {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            background: white;
+            transition: border-color 0.3s;
+        }
+        .email-input-group:focus-within {
+            border-color: #10b981;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+        .email-input-group input {
+            flex: 1;
+            min-width: 0; /* Allow input to shrink below its content size if needed */
+            border: none;
+            padding: 14px 16px;
+            font-size: 1rem;
+            outline: none;
+            background: transparent;
+            font-family: "Kanit", sans-serif;
+        }
+        .email-domain {
+            flex-shrink: 0; /* Prevent the domain part from being squeezed */
+            padding: 14px 16px;
+            background: rgba(16, 185, 129, 0.08);
+            color: #059669;
+            font-weight: 600;
+            font-size: 0.95rem;
+            white-space: nowrap;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .btn-user-primary {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        .btn-user-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            color: white;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            gap: 15px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border-color);
+        }
+        .divider span {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .psu-info {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(16, 185, 129, 0.05);
+            border-radius: 12px;
+            border: 1px dashed rgba(16, 185, 129, 0.2);
+        }
+        .psu-info i {
+            color: #10b981;
+        }
+        .psu-info p {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .login-container { margin: 40px auto; padding: 0 15px; }
+            .email-domain { font-size: 0.9rem; padding: 14px 14px; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <div class="container glass nav-container">
+            <a href="index.html" class="mobile-back-btn" aria-label="กลับหน้าแรก">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <div class="logo nav-logo-center">
+                <i class="fa-solid fa-bullhorn"></i>
+                Report<span>Council</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">หน้าแรก</a>
+            </div>
+            <div class="nav-spacer"></div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div class="login-container fade-in-up">
+            <div class="login-header">
+                <div class="icon-circle">
+                    <i class="fa-solid fa-user-graduate"></i>
+                </div>
+                <span class="login-badge"><i class="fa-solid fa-university"></i> PSU Student</span>
+                <h1>เข้าสู่ระบบนักศึกษา</h1>
+                <p class="text-muted">ใช้เลขประจำตัวนักศึกษา ม.อ. เพื่อเข้าสู่ระบบ</p>
+            </div>
+
+            <div class="glass glass-card">
+                <!-- Tabs -->
+                <div class="auth-tabs">
+                    <button class="auth-tab active" onclick="switchTab('login')">เข้าสู่ระบบ</button>
+                    <button class="auth-tab" onclick="switchTab('register')">สมัครสมาชิก</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" style="display: block;">
+                    <div class="form-group">
+                        <label for="login-studentid"><i class="fa-solid fa-id-card" style="margin-right: 6px; opacity: 0.6;"></i>เลขประจำตัวนักศึกษา</label>
+                        <div class="email-input-group">
+                            <input type="text" id="login-studentid" placeholder="เช่น 6840011xxx" required pattern="[0-9]{10}" title="กรุณากรอกเลขประจำตัว 10 หลัก">
+                            <span class="email-domain">@psu.ac.th</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="login-password"><i class="fa-solid fa-key" style="margin-right: 6px; opacity: 0.6;"></i>รหัสผ่าน</label>
+                        <input type="password" id="login-password" class="form-control" placeholder="••••••••" required minlength="6">
+                    </div>
+
+                    <div id="login-error" class="mb-3" style="color: #ef4444; font-size: 0.88rem; display: none; background: rgba(239,68,68,0.08); padding: 10px 14px; border-radius: 10px;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span id="login-error-text">ข้อผิดพลาด</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-user-primary" id="login-btn" style="width: 100%; padding: 14px; font-size: 1.05rem; margin-top: 10px;">
+                        <i class="fa-solid fa-right-to-bracket" style="margin-right: 8px;"></i> เข้าสู่ระบบ
+                    </button>
+                </form>
+
+                <!-- Register Form -->
+                <form id="registerForm" style="display: none;">
+                    <div class="form-group">
+                        <label for="reg-studentid"><i class="fa-solid fa-id-card" style="margin-right: 6px; opacity: 0.6;"></i>เลขประจำตัวนักศึกษา</label>
+                        <div class="email-input-group">
+                            <input type="text" id="reg-studentid" placeholder="เช่น 6510110xxx" required pattern="[0-9]{10}" title="กรุณากรอกเลขประจำตัว 10 หลัก">
+                            <span class="email-domain">@psu.ac.th</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg-password"><i class="fa-solid fa-key" style="margin-right: 6px; opacity: 0.6;"></i>ตั้งรหัสผ่าน</label>
+                        <input type="password" id="reg-password" class="form-control" placeholder="อย่างน้อย 6 ตัวอักษร" required minlength="6">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reg-confirm"><i class="fa-solid fa-check-double" style="margin-right: 6px; opacity: 0.6;"></i>ยืนยันรหัสผ่าน</label>
+                        <input type="password" id="reg-confirm" class="form-control" placeholder="พิมพ์รหัสผ่านอีกครั้ง" required minlength="6">
+                    </div>
+
+                    <div id="reg-error" class="mb-3" style="color: #ef4444; font-size: 0.88rem; display: none; background: rgba(239,68,68,0.08); padding: 10px 14px; border-radius: 10px;">
+                        <i class="fa-solid fa-triangle-exclamation"></i> <span id="reg-error-text">ข้อผิดพลาด</span>
+                    </div>
+
+                    <div id="reg-success" class="mb-3" style="color: #10b981; font-size: 0.88rem; display: none; background: rgba(16,185,129,0.08); padding: 10px 14px; border-radius: 10px;">
+                        <i class="fa-solid fa-circle-check"></i> <span id="reg-success-text">สมัครสำเร็จ!</span>
+                    </div>
+
+                    <button type="submit" class="btn btn-user-primary" id="reg-btn" style="width: 100%; padding: 14px; font-size: 1.05rem; margin-top: 10px;">
+                        <i class="fa-solid fa-user-plus" style="margin-right: 8px;"></i> สมัครสมาชิก
+                    </button>
+                </form>
+
+                <div class="psu-info">
+                    <i class="fa-solid fa-info-circle"></i>
+                    <p>ระบบนี้สำหรับนักศึกษา มหาวิทยาลัยสงขลานครินทร์ เท่านั้น<br>กรุณาใช้เลขประจำตัวนักศึกษา 10 หลัก</p>
+                </div>
+
+                <div class="back-link">
+                    <a href="index.html"><i class="fa-solid fa-arrow-left"></i> กลับไปหน้าหลัก</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <script>
+        // Tab switching
+        function switchTab(tab) {
+            const tabs = document.querySelectorAll('.auth-tab');
+            tabs[0].classList.toggle('active', tab === 'login');
+            tabs[1].classList.toggle('active', tab === 'register');
+            document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+            // Clear errors
+            document.getElementById('login-error').style.display = 'none';
+            document.getElementById('reg-error').style.display = 'none';
+            document.getElementById('reg-success').style.display = 'none';
+        }
+
+        function showError(formType, message) {
+            const errorDiv = document.getElementById(formType + '-error');
+            const errorText = document.getElementById(formType + '-error-text');
+            errorDiv.style.display = 'block';
+            errorText.textContent = message;
+        }
+
+        function getFirebaseErrorMessage(code) {
+            switch(code) {
+                case 'auth/email-already-in-use': return 'อีเมลนี้ถูกใช้สมัครแล้ว';
+                case 'auth/invalid-email': return 'รูปแบบอีเมลไม่ถูกต้อง';
+                case 'auth/weak-password': return 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร';
+                case 'auth/user-not-found': return 'ไม่พบบัญชีผู้ใช้นี้ กรุณาสมัครสมาชิกก่อน';
+                case 'auth/wrong-password': return 'รหัสผ่านไม่ถูกต้อง';
+                case 'auth/invalid-credential': return 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+                case 'auth/too-many-requests': return 'ลองผิดหลายครั้งเกินไป กรุณารอสักครู่';
+                case 'auth/operation-not-allowed': return 'ระบบล็อกอินด้วยอีเมลยังไม่ได้เปิดใช้งานใน Firebase Console';
+                default: return 'เกิดข้อผิดพลาดในการเชื่อมต่อระบบ';
+            }
+        }
+
+        // Redirect destination (where user came from)
+        const redirectTo = new URLSearchParams(window.location.search).get('redirect') || 'submit.html';
+
+        // Check if already logged in
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                window.location.href = redirectTo;
+            }
+        });
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentId = document.getElementById('login-studentid').value.trim();
+            const password = document.getElementById('login-password').value;
+            const btn = document.getElementById('login-btn');
+            const errorDiv = document.getElementById('login-error');
+
+            errorDiv.style.display = 'none';
+
+            if (!/^\d{10}$/.test(studentId)) {
+                showError('login', 'กรุณากรอกเลขประจำตัวนักศึกษา 10 หลัก');
+                return;
+            }
+
+            const email = studentId + '@psu.ac.th';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i> กำลังตรวจสอบ...';
+            btn.disabled = true;
+
+            try {
+                await firebase.auth().signInWithEmailAndPassword(email, password);
+                // onAuthStateChanged will redirect
+            } catch (error) {
+                console.error("Login error detail:", error);
+                const errMsg = getFirebaseErrorMessage(error.code);
+                showError('login', errMsg + ` (${error.message || error.code})`);
+                btn.innerHTML = '<i class="fa-solid fa-right-to-bracket" style="margin-right: 8px;"></i> เข้าสู่ระบบ';
+                btn.disabled = false;
+            }
+        });
+
+        // Register
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const studentId = document.getElementById('reg-studentid').value.trim();
+            const password = document.getElementById('reg-password').value;
+            const confirm = document.getElementById('reg-confirm').value;
+            const btn = document.getElementById('reg-btn');
+            const errorDiv = document.getElementById('reg-error');
+            const successDiv = document.getElementById('reg-success');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            if (!/^\d{10}$/.test(studentId)) {
+                showError('reg', 'กรุณากรอกเลขประจำตัวนักศึกษา 10 หลัก');
+                return;
+            }
+
+            if (password !== confirm) {
+                showError('reg', 'รหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง');
+                return;
+            }
+
+            if (password.length < 6) {
+                showError('reg', 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');
+                return;
+            }
+
+            const email = studentId + '@psu.ac.th';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" style="margin-right: 8px;"></i> กำลังสมัคร...';
+            btn.disabled = true;
+
+            try {
+                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+
+                // Save user profile to Realtime Database
+                try {
+                    await firebase.database().ref('students/' + studentId).set({
+                        email: email,
+                        studentId: studentId,
+                        createdAt: new Date().toISOString()
+                    });
+                } catch (dbError) {
+                    console.warn("Database save error (continuing anyway):", dbError);
+                }
+
+                successDiv.style.display = 'block';
+                document.getElementById('reg-success-text').textContent = 'สมัครสำเร็จ! กำลังเข้าสู่ระบบ...';
+
+                setTimeout(() => {
+                    window.location.href = redirectTo;
+                }, 1500);
+            } catch (error) {
+                console.error("Register error detail:", error);
+                const errMsg = getFirebaseErrorMessage(error.code);
+                showError('reg', errMsg + ` (${error.message || error.code})`);
+                btn.innerHTML = '<i class="fa-solid fa-user-plus" style="margin-right: 8px;"></i> สมัครสมาชิก';
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

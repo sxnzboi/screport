@@ -118,6 +118,7 @@
             }
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
 
@@ -130,6 +131,21 @@
             <div class="nav-links">
                 <a href="index.html">หน้าบ้านหน้าแรก</a>
                 <a href="#" onclick="logout()" class="text-muted"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</a>
+            </div>
+            <!-- Inbox Button -->
+            <div class="inbox-btn-wrapper" id="adminInboxWrapper">
+                <button class="inbox-nav-btn" id="adminInboxBtn" onclick="toggleAdminInbox()" title="กล่องข้อความ">
+                    <i class="fa-solid fa-comment-dots"></i>
+                    <span class="inbox-badge" id="adminInboxBadge">0</span>
+                </button>
+                <div class="inbox-dropdown" id="adminInboxDropdown">
+                    <div class="inbox-dropdown-header">
+                        <i class="fa-solid fa-inbox"></i> กล่องข้อความทั้งหมด
+                    </div>
+                    <div class="inbox-dropdown-body" id="adminInboxBody">
+                        <div class="inbox-empty"><i class="fa-solid fa-comments"></i>ยังไม่มีข้อความ</div>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -149,11 +165,51 @@
                 </div>
             </div>
 
-            <div class="glass glass-card">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; flex-direction: column; gap: 30px;">
+                <!-- Admin Stats Section -->
+                <section class="stats-container grid grid-cols-4 fade-in-up">
+                    <div class="glass glass-card stat-card" style="padding: 20px; text-align: center;">
+                        <div class="stat-number" id="admin-stat-total" style="font-size: 2.5rem; font-weight: 800; color: var(--primary-color);">0</div>
+                        <p class="text-muted" style="margin-top: 5px; font-weight: 500;">เรื่องทั้งหมด</p>
+                    </div>
+                    <div class="glass glass-card stat-card" style="padding: 20px; text-align: center;">
+                        <div class="stat-number" id="admin-stat-pending" style="font-size: 2.5rem; font-weight: 800; color: var(--status-pending);">0</div>
+                        <p class="text-muted" style="margin-top: 5px; font-weight: 500;">รอดำเนินการ</p>
+                    </div>
+                    <div class="glass glass-card stat-card" style="padding: 20px; text-align: center;">
+                        <div class="stat-number" id="admin-stat-progress" style="font-size: 2.5rem; font-weight: 800; color: var(--status-progress);">0</div>
+                        <p class="text-muted" style="margin-top: 5px; font-weight: 500;">กำลังดำเนินการ</p>
+                    </div>
+                    <div class="glass glass-card stat-card" style="padding: 20px; text-align: center;">
+                        <div class="stat-number" id="admin-stat-resolved" style="font-size: 2.5rem; font-weight: 800; color: var(--status-resolved);">0</div>
+                        <p class="text-muted" style="margin-top: 5px; font-weight: 500;">แก้ไขแล้ว</p>
+                    </div>
+                </section>
+
+                <!-- Admin Chart Section -->
+                <section class="glass glass-card fade-in-up" style="animation-delay: 0.1s;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0;">ภาพรวมสถิติ</h3>
+                        <select id="adminChartFilter" class="form-control" style="width: auto; padding: 8px 12px; font-size: 0.9rem;">
+                            <option value="status">แบ่งตามสถานะ</option>
+                            <option value="category">แบ่งตามหมวดหมู่</option>
+                        </select>
+                    </div>
+                    <div style="position: relative; height: 300px; width: 100%; display: flex; justify-content: center;">
+                        <canvas id="adminComplaintsChart"></canvas>
+                    </div>
+                </section>
+
+                <div class="glass glass-card fade-in-up" style="animation-delay: 0.2s;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
                     <div>
                         <h2>รายการร้องเรียนทั้งหมด</h2>
                         <p class="text-muted">ปรับปรุงสถานะหรือรายละเอียดเรื่องของนักศึกษา</p>
+                    </div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button id="btnExportPDF" class="btn btn-secondary" onclick="exportSelectedPDF()" style="background: var(--primary-color); color: white; display: flex; align-items: center; gap: 8px; font-size: 0.85rem; padding: 8px 16px; border: none; border-radius: 12px; cursor: pointer; transition: all 0.2s;" disabled>
+                            <i class="fa-solid fa-file-pdf"></i> ดาวน์โหลดเรื่องที่เลือก (0)
+                        </button>
                     </div>
                 </div>
 
@@ -161,6 +217,9 @@
                     <table class="admin-table">
                         <thead>
                             <tr>
+                                <th style="width: 40px; text-align: center; vertical-align: middle;">
+                                    <input type="checkbox" id="selectAllComplaints" onchange="toggleSelectAll(this)" style="width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary-color); vertical-align: middle;">
+                                </th>
                                 <th>รหัสเรื่อง</th>
                                 <th>หัวข้อ</th>
                                 <th>หมวดหมู่</th>
@@ -175,8 +234,36 @@
                     </table>
                 </div>
             </div>
+                </div>
+            </div>
         </div>
     </main>
+
+    <!-- Chat Modal -->
+    <div class="chat-modal-overlay" id="chatModalOverlay">
+        <div class="chat-modal">
+            <div class="chat-header">
+                <div class="chat-header-title">
+                    <div class="chat-header-icon"><i class="fa-solid fa-user"></i></div>
+                    <div style="display: flex; flex-direction: column;">
+                        <span id="chatModalTitle">นักศึกษา</span>
+                        <span style="font-size: 0.7rem; font-weight: 500; color: var(--primary-color); margin-top: -2px;">ออนไลน์</span>
+                    </div>
+                </div>
+                <button onclick="closeChat()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <!-- Messages will be populated here -->
+            </div>
+            <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="พิมพ์ข้อความของคุณที่นี่..." onkeypress="if(event.key === 'Enter') sendChatMessage()">
+                <button id="chatSendBtn" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -185,6 +272,9 @@
     <script src="firebase-config.js"></script>
 
     <script>
+        let adminChartInstance = null;
+        let currentAdminComplaints = [];
+
         document.addEventListener('DOMContentLoaded', () => {
             const user = JSON.parse(localStorage.getItem('rep_user'));
             if (!user || user.role !== 'admin') {
@@ -194,6 +284,13 @@
             }
 
             document.getElementById('admin-name').textContent = user.username;
+
+            const filter = document.getElementById('adminChartFilter');
+            if (filter) {
+                filter.addEventListener('change', () => {
+                    renderAdminStats(currentAdminComplaints);
+                });
+            }
 
             loadAdminComplaints();
         });
@@ -216,33 +313,132 @@
                     for (let id in data) {
                         complaints.push({ firebaseId: id, ...data[id] });
                     }
+                    complaints.reverse(); // Newest first
+                    currentAdminComplaints = complaints;
                     renderTable(complaints);
+                    renderAdminStats(complaints);
                 });
             } else {
                 // LocalStorage Mock
                 const complaints = JSON.parse(localStorage.getItem('university_complaints')) || [];
+                currentAdminComplaints = complaints;
                 renderTable(complaints);
+                renderAdminStats(complaints);
             }
+        }
+
+        function renderAdminStats(complaints) {
+            const total = complaints.length;
+            const pending = complaints.filter(c => c.status === 'pending').length;
+            const progress = complaints.filter(c => c.status === 'progress').length;
+            const resolved = complaints.filter(c => c.status === 'resolved').length;
+
+            document.getElementById('admin-stat-total').textContent = total;
+            document.getElementById('admin-stat-pending').textContent = pending;
+            document.getElementById('admin-stat-progress').textContent = progress;
+            document.getElementById('admin-stat-resolved').textContent = resolved;
+
+            const filterType = document.getElementById('adminChartFilter').value;
+            let chartLabels = [];
+            let chartData = [];
+            let chartColors = [];
+
+            if (filterType === 'status') {
+                const cancelled = complaints.filter(c => c.status === 'cancelled').length;
+                chartLabels = ['รอดำเนินการ', 'กำลังดำเนินการ', 'แก้ไขแล้ว', 'ยกเลิก'];
+                chartData = [pending, progress, resolved, cancelled];
+                chartColors = ['#f59e0b', '#3b82f6', '#10b981', '#ef4444'];
+            } else {
+                const categories = {
+                    'facilities': 'อาคารสถานที่ / สภาพแวดล้อม',
+                    'academic': 'การเรียนการสอน',
+                    'it': 'ระบบสารสนเทศ / อินเทอร์เน็ต',
+                    'services': 'บริการของมหาวิทยาลัย',
+                    'other': 'อื่นๆ'
+                };
+                let counts = {};
+                complaints.forEach(c => {
+                    const cat = categories[c.category] || c.category || 'อื่นๆ';
+                    counts[cat] = (counts[cat] || 0) + 1;
+                });
+                chartLabels = Object.keys(counts);
+                chartData = Object.values(counts);
+                // Generate colors based on number of categories
+                const baseColors = ['#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'];
+                chartColors = chartLabels.map((_, i) => baseColors[i % baseColors.length]);
+            }
+
+            const ctx = document.getElementById('adminComplaintsChart').getContext('2d');
+            if (adminChartInstance) {
+                adminChartInstance.destroy();
+            }
+
+            adminChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: chartColors,
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) label += ': ';
+                                    label += context.raw + ' เรื่อง';
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
         }
 
         function renderTable(complaints) {
             const tbody = document.getElementById('adminComplaintsTable');
             tbody.innerHTML = '';
 
+            // Reset master checkbox and export button state on re-render
+            const masterCheckbox = document.getElementById('selectAllComplaints');
+            if (masterCheckbox) masterCheckbox.checked = false;
+            updateExportButtonState();
+
             if (complaints.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;" class="text-muted">ไม่มีข้อมูลเรื่องร้องเรียน</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;" class="text-muted">ไม่มีข้อมูลเรื่องร้องเรียน</td></tr>`;
                 return;
             }
 
             complaints.forEach((complaint, index) => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
+                    <td style="text-align: center; vertical-align: middle;" data-label="เลือก">
+                        <input type="checkbox" class="complaint-checkbox" value="${complaint.firebaseId || index}" onchange="updateExportButtonState()" style="width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary-color); vertical-align: middle;">
+                    </td>
                     <td data-label="รหัสเรื่อง"><strong>${complaint.id}</strong></td>
                     <td data-label="รายละเอียด">
                         <div><strong>${complaint.title}</strong></div>
                         <div class="text-muted" style="font-size: 0.8rem;">${complaint.description || ''}</div>
                         ${complaint.imageUrl ? `<div style="margin-top: 8px;"><img src="${complaint.imageUrl}" style="max-height: 80px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); cursor: pointer;" onclick="window.open('${complaint.imageUrl}', '_blank')"></div>` : ''}
                         
+                        <!-- Submitter Identity Section -->
+                        <div style="margin-top: 8px; font-size: 0.8rem;">
+                            ${complaint.isAnonymous ? 
+                                `<span style="background: rgba(107, 114, 128, 0.1); color: #4b5563; padding: 2px 6px; border-radius: 4px; font-weight: 500;"><i class="fa-solid fa-user-secret"></i> ไม่ระบุตัวตน (Anonymous)</span>` : 
+                                `<span style="background: rgba(16, 185, 129, 0.1); color: #059669; padding: 2px 6px; border-radius: 4px; font-weight: 500;"><i class="fa-solid fa-envelope"></i> ผู้ร้องเรียน: ${complaint.submitterEmail || 'ไม่พบข้อมูล'}</span>`
+                            }
+                        </div>
+
                         <!-- Admin Reply Section -->
                         <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,0.1);">
                             <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; color: var(--primary-color);"><i class="fa-solid fa-reply"></i> ตอบกลับจากสภา</div>
@@ -261,7 +457,14 @@
                         </select>
                     </td>
                     <td data-label="การจัดการ">
-                        <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); color: #ef4444;" onclick="deleteComplaint('${complaint.firebaseId || index}')">ลบ</button>
+                        <div style="display: flex; gap: 8px; flex-direction: column;">
+                            <button onclick="openChat('${complaint.firebaseId || index}', '${complaint.title.replace(/'/g, "\\'")}', '${(complaint.isAnonymous ? 'anonymous' : (complaint.submitterEmail || 'ไม่พบข้อมูล')).replace(/'/g, "\\'")}')" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(79,70,229,0.1); color: var(--primary-color); border: 1px solid rgba(79,70,229,0.2); box-shadow: none; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                <i class="fa-solid fa-comments"></i> แชท
+                            </button>
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); display: flex; align-items: center; justify-content: center; gap: 5px;" onclick="deleteComplaint('${complaint.firebaseId || index}')">
+                                <i class="fa-solid fa-trash"></i> ลบ
+                            </button>
+                        </div>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -313,6 +516,419 @@
                 loadAdminComplaints();
             }
         }
+
+        function toggleSelectAll(master) {
+            const checkboxes = document.querySelectorAll('.complaint-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = master.checked;
+            });
+            updateExportButtonState();
+        }
+
+        function updateExportButtonState() {
+            const selectedCheckboxes = document.querySelectorAll('.complaint-checkbox:checked');
+            const btn = document.getElementById('btnExportPDF');
+            if (!btn) return;
+            
+            const count = selectedCheckboxes.length;
+            if (count > 0) {
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-file-pdf"></i> ดาวน์โหลดเรื่องที่เลือก (${count})`;
+                btn.style.background = 'var(--primary-color)';
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            } else {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fa-solid fa-file-pdf"></i> ดาวน์โหลดเรื่องที่เลือก (0)`;
+                btn.style.background = '#9ca3af';
+                btn.style.opacity = '0.6';
+                btn.style.cursor = 'not-allowed';
+            }
+        }
+
+        function exportSelectedPDF() {
+            const selectedCheckboxes = document.querySelectorAll('.complaint-checkbox:checked');
+            if (selectedCheckboxes.length === 0) {
+                alert('กรุณาเลือกเรื่องร้องเรียนที่ต้องการดาวน์โหลด');
+                return;
+            }
+
+            const idsToExport = Array.from(selectedCheckboxes).map(cb => cb.value);
+            
+            // Filter selected complaints
+            const complaintsToExport = currentAdminComplaints.filter((comp, index) => {
+                const uniqueId = comp.firebaseId || index.toString();
+                return idsToExport.includes(uniqueId);
+            });
+
+            if (complaintsToExport.length === 0) {
+                alert('ไม่พบข้อมูลเรื่องร้องเรียนที่เลือก');
+                return;
+            }
+
+            // Create temporary container for PDF generation inside DOM
+            const element = document.createElement('div');
+            element.style.position = 'relative';
+            element.style.width = '700px'; // 700px is safe and fits A4 nicely with margins, avoiding right-side clipping
+            element.style.boxSizing = 'border-box';
+            element.style.padding = '20px 10px';
+            element.style.background = '#ffffff';
+            element.style.color = '#1f2937';
+            element.style.fontFamily = "'Kanit', sans-serif";
+
+            // Main Report Header (Compact)
+            let htmlContent = `
+                <div style="text-align: center; border-bottom: 3px solid #4f46e5; padding-bottom: 12px; margin-bottom: 18px; font-family: 'Kanit', sans-serif;">
+                    <div style="font-size: 1.8rem; font-weight: 800; color: #4f46e5; margin-bottom: 2px; letter-spacing: 0.5px;">ReportCouncil Report</div>
+                    <div style="font-size: 0.95rem; font-weight: 500; color: #4b5563;">รายงานข้อมูลเรื่องร้องเรียนและข้อเสนอแนะของนักศึกษา</div>
+                    <div style="font-size: 0.75rem; color: #9ca3af; margin-top: 4px;">
+                        จัดทำโดย: สภานักศึกษา | วันที่ออกเอกสาร: ${new Date().toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    </div>
+                </div>
+            `;
+
+            complaintsToExport.forEach((comp, idx) => {
+                const isAnon = comp.isAnonymous;
+                const submitter = isAnon ? 'ไม่ระบุตัวตน (Anonymous)' : (comp.submitterEmail || 'ไม่ระบุอีเมล');
+                
+                let statusLabel = '';
+                let statusColor = '';
+                if (comp.status === 'pending') { statusLabel = 'รอดำเนินการ'; statusColor = '#f59e0b'; }
+                else if (comp.status === 'progress') { statusLabel = 'กำลังดำเนินการ'; statusColor = '#3b82f6'; }
+                else if (comp.status === 'resolved') { statusLabel = 'แก้ไขแล้ว'; statusColor = '#10b981'; }
+                else { statusLabel = 'คำขอถูกยกเลิก'; statusColor = '#ef4444'; }
+
+                htmlContent += `
+                    <div style="margin-bottom: 12px; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 12px; background: #fafafa; font-family: 'Kanit', sans-serif; display: flex; justify-content: space-between; gap: 12px; page-break-inside: avoid; box-sizing: border-box; width: 100%;">
+                        <!-- Left Side: Content -->
+                        <div style="flex: 1; min-width: 0;">
+                            <!-- Top Bar: ID, Status, Date -->
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap;">
+                                <span style="font-size: 0.7rem; font-weight: 700; color: #4f46e5; background: rgba(79, 70, 229, 0.08); padding: 1px 5px; border-radius: 4px;">${comp.id}</span>
+                                <span style="background: ${statusColor}; color: white; padding: 1px 7px; border-radius: 10px; font-size: 0.65rem; font-weight: 700;">${statusLabel}</span>
+                                <span style="font-size: 0.65rem; color: #9ca3af;">วันที่แจ้ง: ${comp.date}</span>
+                            </div>
+
+                            <!-- Title -->
+                            <h3 style="font-size: 0.95rem; font-weight: 700; color: #111827; margin: 0 0 4px 0; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${comp.title}</h3>
+
+                            <!-- Metadata Line -->
+                            <div style="font-size: 0.75rem; color: #6b7280; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <strong>หมวดหมู่:</strong> ${comp.category} | 
+                                <strong>สถานที่:</strong> ${comp.location || 'ไม่ระบุ'} | 
+                                <strong>ผู้ร้องเรียน:</strong> ${submitter}
+                            </div>
+
+                            <!-- Description (Clamped to 2 lines for spacing) -->
+                            <div style="font-size: 0.8rem; color: #4b5563; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px;">
+                                ${comp.description || 'ไม่มีรายละเอียดเพิ่มเติม'}
+                            </div>
+
+                            <!-- Council Reply (Compact) -->
+                            ${comp.adminReply ? `
+                            <div style="padding: 5px 8px; background: rgba(79, 70, 229, 0.03); border-left: 3px solid #4f46e5; border-radius: 0 6px 6px 0; font-size: 0.75rem; color: #374151; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical;">
+                                <strong>ตอบกลับ:</strong> ${comp.adminReply}
+                            </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Right Side: Thumbnail Image -->
+                        ${comp.imageUrl ? `
+                        <div style="flex-shrink: 0; display: flex; align-items: center; justify-content: center; width: 75px; height: 75px;">
+                            <img src="${comp.imageUrl}" style="width: 75px; height: 75px; border-radius: 8px; border: 1px solid #e5e7eb; object-fit: cover;">
+                        </div>
+                        ` : ''}
+                    </div>
+                `;
+            });
+
+            element.innerHTML = htmlContent;
+
+            // Page break stylesheet injection
+            const style = document.createElement('style');
+            style.innerHTML = `
+                .pdf-page-break {
+                    page-break-before: always;
+                }
+            `;
+            element.appendChild(style);
+
+            // Temporarily append the element to body so DOM measurements and font loading are accurate
+            document.body.appendChild(element);
+
+            // Configure html2pdf options (using 10mm margins for extra printable height)
+            const opt = {
+                margin:       [10, 10, 10, 10], // top, left, bottom, right
+                filename:     `ReportCouncil_Report_${new Date().toISOString().slice(0,10)}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: ['css', 'legacy'] }
+            };
+
+            // Loading feedback on the button
+            const btn = document.getElementById('btnExportPDF');
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> กำลังสร้าง PDF...`;
+
+            // Run html2pdf
+            html2pdf().set(opt).from(element).save()
+                .then(() => {
+                    document.body.removeChild(element); // Clean up DOM
+                    btn.disabled = false;
+                    updateExportButtonState();
+                })
+                .catch(err => {
+                    console.error("PDF Export error:", err);
+                    alert("เกิดข้อผิดพลาดในการส่งออก PDF: " + err);
+                    if (document.body.contains(element)) {
+                        document.body.removeChild(element); // Clean up DOM
+                    }
+                    btn.disabled = false;
+                    updateExportButtonState();
+                });
+        }
+
+        /* =========================================
+           Admin Chat System Logic
+           ========================================= */
+        let currentChatId = null;
+        let chatListenerRef = null;
+
+        window.openChat = function(complaintId, title, studentEmail) {
+            currentChatId = complaintId;
+            const modal = document.getElementById('chatModalOverlay');
+            const messagesContainer = document.getElementById('chatMessages');
+            
+            // Update header: show student identity
+            const displayName = (!studentEmail || studentEmail === 'anonymous') 
+                ? 'ไม่ระบุตัวตน (Anonymous)' 
+                : studentEmail;
+            document.getElementById('chatModalTitle').textContent = displayName;
+            
+            // Swap icon based on anonymous or not
+            const icon = modal.querySelector('.chat-header-icon i');
+            if (icon) {
+                icon.className = (!studentEmail || studentEmail === 'anonymous') 
+                    ? 'fa-solid fa-user-secret' 
+                    : 'fa-solid fa-user-graduate';
+            }
+
+            // Add complaint title subtitle
+            let subtitleEl = document.getElementById('chatModalSubtitle');
+            if (!subtitleEl) {
+                subtitleEl = document.createElement('span');
+                subtitleEl.id = 'chatModalSubtitle';
+                subtitleEl.style = 'font-size: 0.7rem; font-weight: 400; color: var(--text-muted); display: block; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 180px;';
+                document.getElementById('chatModalTitle').parentNode.appendChild(subtitleEl);
+            }
+            subtitleEl.textContent = 'เรื่อง: ' + title;
+
+            messagesContainer.innerHTML = '<div style="text-align:center; padding: 30px 20px; color: var(--text-muted); font-size: 0.85rem;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 10px; display: block;"></i>กำลังโหลดข้อความ...</div>';
+            modal.classList.add('active');
+
+            if (chatListenerRef) {
+                chatListenerRef.off('child_added');
+            }
+
+            if (typeof firebaseAppInitialized !== 'undefined' && firebaseAppInitialized) {
+                messagesContainer.innerHTML = ''; 
+                chatListenerRef = firebase.database().ref('chats/' + complaintId);
+                chatListenerRef.on('child_added', (snapshot) => {
+                    const msg = snapshot.val();
+                    appendChatMessage(msg);
+                });
+            }
+        };
+
+        window.closeChat = function() {
+            document.getElementById('chatModalOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+            if (chatListenerRef) {
+                chatListenerRef.off('child_added');
+                chatListenerRef = null;
+            }
+            currentChatId = null;
+        };
+
+        // Close on overlay background click
+        document.getElementById('chatModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) window.closeChat();
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') window.closeChat();
+        });
+
+        window.sendChatMessage = function() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            const btn = document.getElementById('chatSendBtn');
+
+            if (!text || !currentChatId) return;
+
+            input.disabled = true;
+            btn.disabled = true;
+
+            const msgData = {
+                sender: 'admin', // identify as admin
+                text: text,
+                timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+
+            firebase.database().ref('chats/' + currentChatId).push(msgData)
+                .then(() => {
+                    input.value = '';
+                    input.disabled = false;
+                    btn.disabled = false;
+                    input.focus();
+                })
+                .catch(error => {
+                    console.error("Error sending message:", error);
+                    alert('ไม่สามารถส่งข้อความได้ กรุณาลองใหม่');
+                    input.disabled = false;
+                    btn.disabled = false;
+                });
+        };
+
+        function appendChatMessage(msg) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const wrapper = document.createElement('div');
+            
+            const isMe = msg.sender === 'admin';
+            wrapper.className = `chat-message-wrapper ${isMe ? 'sent' : 'received'}`;
+            
+            const timeString = msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString('th-TH', {hour: '2-digit', minute:'2-digit'}) : '';
+            const senderName = isMe ? 'สภานักศึกษา' : msg.sender;
+
+            wrapper.innerHTML = `
+                ${!isMe ? `<div class="chat-sender-name">${senderName}</div>` : ''}
+                <div class="chat-message">${msg.text.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</div>
+                <span class="chat-meta">${timeString}</span>
+            `;
+            
+            messagesContainer.appendChild(wrapper);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        /* =========================================
+           Admin Inbox System
+           ========================================= */
+        let adminInboxOpen = false;
+        let complaintsMap = {};
+
+        // Build map of complaints for quick lookup
+        if (firebaseAppInitialized) {
+            firebase.database().ref('complaints').on('value', (snap) => {
+                complaintsMap = snap.val() || {};
+            });
+        }
+
+        function toggleAdminInbox() {
+            adminInboxOpen = !adminInboxOpen;
+            document.getElementById('adminInboxDropdown').classList.toggle('open', adminInboxOpen);
+            if (adminInboxOpen) loadAdminInbox();
+        }
+
+        document.addEventListener('click', (e) => {
+            const wrapper = document.getElementById('adminInboxWrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                adminInboxOpen = false;
+                document.getElementById('adminInboxDropdown').classList.remove('open');
+            }
+        });
+
+        function loadAdminInbox() {
+            const body = document.getElementById('adminInboxBody');
+            body.innerHTML = '<div class="inbox-empty"><i class="fa-solid fa-spinner fa-spin"></i> \u0e01\u0e33\u0e25\u0e31\u0e07\u0e42\u0e2b\u0e25\u0e14...</div>';
+
+            if (!firebaseAppInitialized) {
+                body.innerHTML = '<div class="inbox-empty"><i class="fa-solid fa-comments"></i>\u0e15\u0e49\u0e2d\u0e07\u0e40\u0e0a\u0e37\u0e48\u0e2d\u0e21\u0e15\u0e48อ Firebase</div>';
+                return;
+            }
+
+            firebase.database().ref('chats').once('value', (snap) => {
+                const allChats = snap.val();
+                if (!allChats) {
+                    body.innerHTML = '<div class="inbox-empty"><i class="fa-solid fa-comments"></i>\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e35\u0e02\u0e49\u0e2d\u0e04\u0e27\u0e32\u0e21</div>';
+                    return;
+                }
+
+                const conversations = [];
+                let unreadCount = 0;
+
+                for (const complaintId in allChats) {
+                    const messages = Object.values(allChats[complaintId]);
+                    if (!messages.length) continue;
+                    const lastMsg = messages[messages.length - 1];
+                    const complaint = complaintsMap[complaintId] || {};
+                    const isUnread = lastMsg.sender !== 'admin';
+                    if (isUnread) unreadCount++;
+                    conversations.push({ complaintId, lastMsg, complaint, isUnread });
+                }
+
+                conversations.sort((a, b) => (b.lastMsg.timestamp || 0) - (a.lastMsg.timestamp || 0));
+
+                const badge = document.getElementById('adminInboxBadge');
+                if (unreadCount > 0) {
+                    badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+                    badge.classList.add('visible');
+                } else {
+                    badge.classList.remove('visible');
+                }
+
+                if (!conversations.length) {
+                    body.innerHTML = '<div class="inbox-empty"><i class="fa-solid fa-comments"></i>\u0e22\u0e31\u0e07\u0e44\u0e21\u0e48\u0e21\u0e35\u0e02\u0e49\u0e2d\u0e04\u0e27\u0e32\u0e21</div>';
+                    return;
+                }
+
+                body.innerHTML = conversations.map(({ complaintId, lastMsg, complaint, isUnread }) => {
+                    const isAnon = complaint.isAnonymous;
+                    const displayName = isAnon ? '\u0e44\u0e21\u0e48\u0e23\u0e30\u0e1a\u0e38\u0e15\u0e31\u0e27\u0e15\u0e19' : (complaint.submitterEmail || '\u0e19\u0e31\u0e01\u0e28\u0e36\u0e01\u0e29\u0e32');
+                    const icon = isAnon ? 'fa-user-secret' : 'fa-user-graduate';
+                    const title = (complaint.title || complaintId).replace(/'/g, "\\'");
+                    const preview = ((lastMsg.sender === 'admin' ? '\u0e04\u0e38\u0e13: ' : '') + lastMsg.text).replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    const time = lastMsg.timestamp ? new Date(lastMsg.timestamp).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' }) : '';
+                    const studentEmail = isAnon ? 'anonymous' : (complaint.submitterEmail || '').replace(/'/g, "\\'");
+                    return `<div class="inbox-convo-item" onclick="openChatFromInbox('${complaintId}', '${title}', '${studentEmail}')">
+                        <div class="inbox-convo-avatar ${isAnon ? 'anon' : ''}"><i class="fa-solid ${icon}"></i></div>
+                        <div class="inbox-convo-info">
+                            <div class="inbox-convo-name">${displayName}</div>
+                            <div class="inbox-convo-preview">${preview}</div>
+                        </div>
+                        <div class="inbox-convo-meta">
+                            <span class="inbox-convo-time">${time}</span>
+                            <span class="inbox-unread-dot ${isUnread ? 'visible' : ''}"></span>
+                        </div>
+                    </div>`;
+                }).join('');
+            });
+        }
+
+        window.openChatFromInbox = function(complaintId, title, studentEmail) {
+            adminInboxOpen = false;
+            document.getElementById('adminInboxDropdown').classList.remove('open');
+            openChat(complaintId, title, studentEmail);
+        };
+
+        // Refresh badge every 30s in background
+        setInterval(() => {
+            if (!adminInboxOpen && firebaseAppInitialized) {
+                firebase.database().ref('chats').once('value', (snap) => {
+                    const all = snap.val() || {};
+                    let unread = 0;
+                    for (const id in all) {
+                        const msgs = Object.values(all[id]);
+                        if (msgs.length && msgs[msgs.length - 1].sender !== 'admin') unread++;
+                    }
+                    const badge = document.getElementById('adminInboxBadge');
+                    if (unread > 0) { badge.textContent = unread > 9 ? '9+' : unread; badge.classList.add('visible'); }
+                    else { badge.classList.remove('visible'); }
+                });
+            }
+        }, 30000);
     </script>
 </body>
 </html>

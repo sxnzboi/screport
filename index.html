@@ -278,6 +278,11 @@
             .hero p { font-size: 1rem; padding: 0 10px; }
             .hero-actions { flex-direction: column; padding: 0 20px; }
             .hero-actions .btn { width: 100%; }
+            .feature-icon { width: 45px; height: 45px; font-size: 1.2rem; margin-bottom: 12px; border-radius: 12px; }
+            .features h3.mb-2 { font-size: 1.1rem; margin-bottom: 8px; }
+            .features p.text-muted { font-size: 0.85rem; line-height: 1.4; }
+            .how-to-use .grid-cols-3 { grid-template-columns: 1fr; gap: 30px; }
+            .how-to-use .step-connector { display: none; }
             .council-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
             .flip-card { height: 250px; }
             .section-header h2 { font-size: 1.6rem; }
@@ -309,8 +314,27 @@
                 <a href="submit.html">แจ้งเรื่องร้องเรียน</a>
                 <a href="dashboard.html">ติดตามสถานะ</a>
             </div>
-            <div>
-                <a href="submit.html" class="btn btn-primary">เริ่มต้นใช้งาน</a>
+            <div class="nav-right">
+                <a href="user-login.html?redirect=index.html" class="btn btn-primary btn-nav-guest" id="navGuestLoginBtn">เข้าสู่ระบบ</a>
+                <!-- User Profile Dropdown -->
+                <div class="user-nav-profile" id="userProfileNav" style="display: none;">
+                    <div class="user-profile-trigger" id="userProfileTrigger">
+                        <i class="fa-solid fa-circle-user"></i>
+                        <span class="user-email-text" id="userEmailNav"></span>
+                        <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; opacity: 0.7;"></i>
+                    </div>
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <div class="dropdown-header">
+                            <span class="dropdown-label">เข้าสู่ระบบโดย</span>
+                            <span class="dropdown-email" id="dropdownEmail"></span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="dashboard.html" class="dropdown-item"><i class="fa-solid fa-chart-line"></i> ติดตามสถานะ</a>
+                        <a href="submit.html" class="dropdown-item"><i class="fa-solid fa-paper-plane"></i> แจ้งเรื่องร้องเรียน</a>
+                        <div class="dropdown-divider"></div>
+                        <button onclick="handleNavLogout()" class="dropdown-item text-danger"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -350,7 +374,38 @@
             </div>
         </section>
 
-        
+        <!-- How to Use Section -->
+        <section class="how-to-use fade-in-up" style="animation-delay: 0.3s; margin-bottom: 60px;">
+            <div class="section-header">
+                <h2>วิธีการใช้งาน</h2>
+                <p class="text-muted">ขั้นตอนการแจ้งเรื่องและติดตามผลง่ายๆ ใน 3 ขั้นตอน</p>
+            </div>
+            
+            <div class="glass glass-card">
+                <div class="grid grid-cols-3" style="text-align: center;">
+                    <div class="step-item" style="padding: 10px;">
+                        <div style="width: 50px; height: 50px; background: rgba(79, 70, 229, 0.1); color: var(--primary-color); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; margin: 0 auto 15px;">1</div>
+                        <h4 style="margin-bottom: 8px;">แจ้งเรื่องร้องเรียน</h4>
+                        <p class="text-muted" style="font-size: 0.85rem; line-height: 1.5;">เข้าสู่ระบบด้วยอีเมลมหาลัยฯ และกรอกรายละเอียดของปัญหาที่พบ</p>
+                    </div>
+                    
+                    <div class="step-item" style="padding: 10px; position: relative;">
+                        <!-- Right arrow connector for desktop (hidden on mobile naturally via wrap or can be styled in CSS) -->
+                        <div class="step-connector" style="position: absolute; top: 35px; left: -25%; width: 50%; height: 2px; background: rgba(0,0,0,0.05); z-index: -1;"></div>
+                        <div style="width: 50px; height: 50px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; margin: 0 auto 15px;">2</div>
+                        <h4 style="margin-bottom: 8px;">สภาฯ รับเรื่อง</h4>
+                        <p class="text-muted" style="font-size: 0.85rem; line-height: 1.5;">ระบบจะส่งข้อมูลไปยังสภานักศึกษาเพื่อพิจารณาและประสานงานหน่วยงานที่เกี่ยวข้อง</p>
+                    </div>
+                    
+                    <div class="step-item" style="padding: 10px; position: relative;">
+                        <div class="step-connector" style="position: absolute; top: 35px; left: -25%; width: 50%; height: 2px; background: rgba(0,0,0,0.05); z-index: -1;"></div>
+                        <div style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.1); color: var(--status-resolved); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; margin: 0 auto 15px;">3</div>
+                        <h4 style="margin-bottom: 8px;">ติดตามสถานะ</h4>
+                        <p class="text-muted" style="font-size: 0.85rem; line-height: 1.5;">คุณสามารถเช็คความคืบหน้าได้ตลอดเวลาผ่านหน้าติดตามสถานะ</p>
+                    </div>
+                </div>
+            </div>
+        </section>
 
     </main>
 
@@ -374,5 +429,52 @@
         </a>
     </div>
 
+    <!-- Firebase Compat SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script>
+        // Setup dropdown toggle
+        const trigger = document.getElementById('userProfileTrigger');
+        const menu = document.getElementById('userDropdownMenu');
+        if (trigger && menu) {
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.toggle('show');
+            });
+            document.addEventListener('click', () => {
+                menu.classList.remove('show');
+            });
+        }
+
+        // Firebase Auth State
+        if (typeof firebaseAppInitialized !== 'undefined' && firebaseAppInitialized) {
+            firebase.auth().onAuthStateChanged(user => {
+                const navGuestLoginBtn = document.getElementById('navGuestLoginBtn');
+                const userProfileNav = document.getElementById('userProfileNav');
+                const userEmailNav = document.getElementById('userEmailNav');
+                const dropdownEmail = document.getElementById('dropdownEmail');
+                
+                if (user) {
+                    if (navGuestLoginBtn) navGuestLoginBtn.style.setProperty('display', 'none', 'important');
+                    if (userProfileNav) userProfileNav.style.display = 'flex';
+                    if (userEmailNav) userEmailNav.textContent = user.email;
+                    if (dropdownEmail) dropdownEmail.textContent = user.email;
+                } else {
+                    if (navGuestLoginBtn) navGuestLoginBtn.style.setProperty('display', 'inline-flex', 'important');
+                    if (userProfileNav) userProfileNav.style.display = 'none';
+                }
+            });
+        }
+
+        function handleNavLogout() {
+            if (typeof firebaseAppInitialized !== 'undefined' && firebaseAppInitialized) {
+                firebase.auth().signOut().then(() => {
+                    window.location.reload();
+                });
+            }
+        }
+    </script>
 </body>
 </html>

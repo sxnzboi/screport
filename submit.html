@@ -61,15 +61,34 @@
                 <a href="submit.html" class="active">แจ้งเรื่องร้องเรียน</a>
                 <a href="dashboard.html">ติดตามสถานะ</a>
             </div>
-            <!-- Spacer to balance back button on mobile -->
-            <div class="nav-spacer"></div>
+            <div class="nav-right">
+                <!-- User Profile Dropdown -->
+                <div class="user-nav-profile" id="userProfileNav" style="display: none;">
+                    <div class="user-profile-trigger" id="userProfileTrigger">
+                        <i class="fa-solid fa-circle-user"></i>
+                        <span class="user-email-text" id="userEmailNav"></span>
+                        <i class="fa-solid fa-chevron-down" style="font-size: 0.7rem; opacity: 0.7;"></i>
+                    </div>
+                    <div class="user-dropdown-menu" id="userDropdownMenu">
+                        <div class="dropdown-header">
+                            <span class="dropdown-label">เข้าสู่ระบบโดย</span>
+                            <span class="dropdown-email" id="dropdownEmail"></span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="dashboard.html" class="dropdown-item"><i class="fa-solid fa-chart-line"></i> ติดตามสถานะ</a>
+                        <a href="submit.html" class="dropdown-item"><i class="fa-solid fa-paper-plane"></i> แจ้งเรื่องร้องเรียน</a>
+                        <div class="dropdown-divider"></div>
+                        <button onclick="handleNavLogout()" class="dropdown-item text-danger"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </nav>
 
     <main class="container">
         <div class="form-container fade-in-up">
             <div class="page-header">
-                <h1 class="mb-2">แจ้งเรื่องร้องเรียน / เสนอแนะ</h1>
+                <h1 class="mb-2">แจ้งเรื่องร้องเรียน</h1>
                 <p class="text-muted">กรุณากรอกข้อมูลให้ครบถ้วนเพื่อให้หน่วยงานที่เกี่ยวข้องดำเนินการได้อย่างถูกต้อง</p>
             </div>
 
@@ -104,7 +123,7 @@
                     </div>
 
                     <div class="form-group">
-                        <label>แนบรูปภาพหรือไฟล์หลักฐาน (ถ้ามี)</label>
+                        <label>แนบรูปภาพหรือไฟล์หลักฐาน (หากสะดวกเเนบหรือมี)</label>
                         <div class="file-upload" id="fileUploadContainer" onclick="document.getElementById('fileInput').click()" style="cursor: pointer;">
                             <i class="fa-solid fa-cloud-arrow-up" id="uploadIcon"></i>
                             <p id="uploadText">คลิกเพื่ออัพโหลด หรือ ลากไฟล์มาวางที่นี่</p>
@@ -150,8 +169,54 @@
 
     <!-- Firebase Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
+    <script>
+        // Setup dropdown toggle
+        const trigger = document.getElementById('userProfileTrigger');
+        const menu = document.getElementById('userDropdownMenu');
+        if (trigger && menu) {
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                menu.classList.toggle('show');
+            });
+            document.addEventListener('click', () => {
+                menu.classList.remove('show');
+            });
+        }
+
+        function handleNavLogout() {
+            if (typeof firebaseAppInitialized !== 'undefined' && firebaseAppInitialized) {
+                firebase.auth().signOut().then(() => {
+                    window.location.href = 'index.html';
+                });
+            }
+        }
+
+        // Auth gate: redirect to login if not authenticated
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = 'user-login.html?redirect=submit.html';
+            } else {
+                document.body.style.opacity = '1';
+                window.currentUserEmail = user.email;
+                
+                // Show user profile in navbar
+                const userProfileNav = document.getElementById('userProfileNav');
+                const userEmailNav = document.getElementById('userEmailNav');
+                const dropdownEmail = document.getElementById('dropdownEmail');
+                if (userProfileNav && userEmailNav) {
+                    userEmailNav.textContent = user.email;
+                    if (dropdownEmail) dropdownEmail.textContent = user.email;
+                    userProfileNav.style.display = 'flex';
+                }
+            }
+        });
+        // Hide page until auth check completes
+        document.body.style.opacity = '0';
+        document.body.style.transition = 'opacity 0.3s';
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

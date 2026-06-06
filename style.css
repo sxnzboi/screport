@@ -23,7 +23,6 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  
   font-family: "Kanit", sans-serif;
   font-weight: 400;
   font-style: normal;
@@ -107,6 +106,8 @@ a:hover {
 nav {
   padding: 20px 20px 0 20px;
   margin-bottom: 40px;
+  position: relative;
+  z-index: 9999;
 }
 
 .nav-container {
@@ -362,6 +363,7 @@ textarea.form-control {
 
 .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
 .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
 
 /* Animation */
 .fade-in-up {
@@ -393,6 +395,9 @@ textarea.form-control {
   }
   
   .grid-cols-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .grid-cols-4 {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -428,14 +433,28 @@ textarea.form-control {
 
   /* Center the logo text when a back button is present */
   .nav-logo-center {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 1.2rem;
+    position: static;
+    transform: none;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    margin: 0 10px;
   }
 
-  .nav-container > div:last-child {
-    display: none; /* Hide header CTA button */
+  #navLoginBtn {
+    display: none !important; /* Hide "เริ่มต้นใช้งาน" CTA on mobile (index.html) */
+  }
+
+  /* Guest login button on dashboard - keep visible but light */
+  #navGuestLoginBtn.btn-nav-guest {
+    display: inline-flex !important;
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    background: rgba(79, 70, 229, 0.1);
+    color: var(--primary-color);
+    border: 1px solid rgba(79, 70, 229, 0.2);
+    box-shadow: none;
+    border-radius: 20px;
   }
 
   .hero {
@@ -463,12 +482,12 @@ textarea.form-control {
     width: 100%;
   }
 
-  .grid-cols-2, .grid-cols-3 {
+  .grid-cols-2, .grid-cols-3, .grid-cols-4 {
     grid-template-columns: 1fr;
   }
 
   .glass-card {
-    padding: 20px;
+    padding: 16px;
   }
 
   /* Form responsive adjustments */
@@ -597,3 +616,606 @@ textarea.form-control {
   }
 }
 
+/* --- Premium Navbar User Profile Styles --- */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-nav-profile {
+  position: relative;
+}
+
+.user-profile-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all var(--transition-speed);
+  user-select: none;
+}
+
+.user-profile-trigger:hover {
+  background: rgba(16, 185, 129, 0.15);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.1);
+}
+
+.user-profile-trigger i.fa-circle-user {
+  font-size: 1.35rem;
+  color: #10b981;
+}
+
+.user-email-text {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #059669;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Hide email text on small screens for visual layout */
+@media (max-width: 600px) {
+  .user-email-text {
+    display: none;
+  }
+  .user-profile-trigger {
+    padding: 8px;
+    border-radius: 50%;
+  }
+  .user-profile-trigger i.fa-chevron-down {
+    display: none;
+  }
+}
+
+.user-dropdown-menu {
+  position: absolute !important;
+  top: calc(100% + 10px) !important;
+  right: 0 !important;
+  width: 220px !important;
+  background: white !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+  padding: 8px 0 !important;
+  display: none !important;
+  flex-direction: column !important;
+  z-index: 100000 !important;
+}
+
+.user-dropdown-menu.show {
+  display: flex !important;
+}
+
+.dropdown-header {
+  padding: 10px 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+}
+
+.dropdown-label {
+  font-size: 0.7rem !important;
+  color: var(--text-muted) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  font-weight: 700 !important;
+}
+
+.dropdown-email {
+  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  color: var(--text-main) !important;
+  word-break: break-all !important;
+  margin-top: 2px !important;
+}
+
+.dropdown-divider {
+  height: 1px !important;
+  background: rgba(0,0,0,0.05) !important;
+  margin: 6px 0 !important;
+  display: block !important;
+  width: 100% !important;
+}
+
+.dropdown-item {
+  padding: 12px 16px !important;
+  font-size: 0.85rem !important;
+  color: var(--text-main) !important;
+  font-weight: 500 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  background: transparent !important;
+  border: none !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 40px !important;
+  position: relative !important;
+  text-align: left !important;
+  cursor: pointer !important;
+  transition: background 0.2s !important;
+  font-family: "Kanit", sans-serif !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+}
+
+.dropdown-item:hover {
+  background: rgba(0, 0, 0, 0.04) !important;
+}
+
+.dropdown-item.text-danger {
+  color: #ef4444 !important;
+}
+
+.dropdown-item.text-danger:hover {
+  background: rgba(239, 68, 68, 0.05) !important;
+}
+
+@keyframes fadeInNav {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Specific Mobile Dropdown Overlapping Fix */
+@media (max-width: 768px) {
+  .user-dropdown-menu {
+    position: absolute !important;
+    top: calc(100% + 5px) !important;
+    right: 0 !important;
+    display: none !important;
+    flex-direction: column !important;
+    background: white !important;
+    width: 220px !important;
+    z-index: 100000 !important;
+    padding: 8px 0 !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(0, 0, 0, 0.08) !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+  }
+  .user-dropdown-menu.show {
+    display: flex !important;
+  }
+  .dropdown-item {
+    display: flex !important;
+    position: relative !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    height: auto !important;
+    min-height: 44px !important;
+    padding: 12px 16px !important;
+    margin: 0 !important;
+    color: #1e293b !important;
+    text-decoration: none !important;
+    box-sizing: border-box !important;
+  }
+}
+
+/* =========================================
+   Modern Chat UI
+   ========================================= */
+.chat-modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 100000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.chat-modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.chat-modal {
+  background: #f0f2f5;
+  width: 92%;
+  max-width: 520px;
+  height: 72vh;
+  max-height: 680px;
+  min-height: 480px;
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transform: translateY(20px) scale(0.95);
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.chat-modal-overlay.active .chat-modal {
+  transform: translateY(0) scale(1);
+}
+
+.chat-header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: var(--text-main);
+  padding: 16px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  z-index: 10;
+}
+
+.chat-header-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.chat-header-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+
+.chat-header button {
+  background: rgba(0,0,0,0.05);
+  border: none;
+  color: var(--text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.chat-header button:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: transparent;
+}
+
+.chat-message-wrapper {
+  display: flex;
+  flex-direction: column;
+  max-width: 75%;
+  animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.chat-message-wrapper.sent {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.chat-message-wrapper.received {
+  align-self: flex-start;
+  align-items: flex-start;
+}
+
+.chat-message {
+  padding: 12px 16px;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  position: relative;
+  word-wrap: break-word;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.chat-message-wrapper.sent .chat-message {
+  background: var(--primary-color);
+  color: white;
+  border-radius: 20px 20px 4px 20px;
+}
+
+.chat-message-wrapper.received .chat-message {
+  background: white;
+  color: var(--text-main);
+  border-radius: 20px 20px 20px 4px;
+}
+
+.chat-meta {
+  font-size: 0.7rem;
+  color: #9ca3af;
+  margin-top: 6px;
+  display: block;
+}
+
+.chat-sender-name {
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--text-muted);
+  padding-left: 4px;
+}
+
+.chat-input-area {
+  padding: 15px 20px;
+  background: white;
+  display: flex;
+  gap: 12px;
+  box-shadow: 0 -5px 15px rgba(0,0,0,0.03);
+  padding-bottom: env(safe-area-inset-bottom, 15px); /* Safe area for iPhone */
+}
+
+.chat-input-area input {
+  flex: 1;
+  padding: 12px 20px;
+  border: 1px solid rgba(0,0,0,0.1);
+  background: #f8fafc;
+  border-radius: 24px;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.chat-input-area input:focus {
+  border-color: var(--primary-color);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.chat-input-area button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+}
+
+.chat-input-area button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(79, 70, 229, 0.4);
+}
+.chat-input-area button:disabled {
+  background: #cbd5e1;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@keyframes popIn {
+  0% { opacity: 0; transform: scale(0.9) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@media (max-width: 768px) {
+  .chat-modal {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: 100%;
+    min-height: unset;
+    border-radius: 0;
+  }
+}
+
+/* =========================================
+   Inbox / Messages Notification Button
+   ========================================= */
+.inbox-btn-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inbox-nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--primary-color);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.inbox-nav-btn:hover {
+  background: rgba(79, 70, 229, 0.15);
+  transform: scale(1.05);
+}
+
+.inbox-badge {
+  position: absolute;
+  top: -3px;
+  right: -3px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 800;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid white;
+  display: none;
+}
+
+.inbox-badge.visible {
+  display: flex;
+}
+
+.inbox-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 340px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  z-index: 99999;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-8px) scale(0.97);
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.inbox-dropdown.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.inbox-dropdown-header {
+  padding: 14px 18px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-main);
+}
+
+.inbox-dropdown-body {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.inbox-convo-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  cursor: pointer;
+  transition: background 0.15s;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  text-decoration: none;
+  color: inherit;
+}
+
+.inbox-convo-item:hover {
+  background: rgba(79, 70, 229, 0.04);
+}
+
+.inbox-convo-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.inbox-convo-avatar.anon {
+  background: #6b7280;
+}
+
+.inbox-convo-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.inbox-convo-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inbox-convo-preview {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+.inbox-convo-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.inbox-convo-time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.inbox-unread-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  display: none;
+}
+
+.inbox-unread-dot.visible {
+  display: block;
+}
+
+.inbox-empty {
+  text-align: center;
+  padding: 30px 20px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.inbox-empty i {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 8px;
+  opacity: 0.3;
+}
+
+@media (max-width: 768px) {
+  .inbox-dropdown {
+    width: 300px;
+    right: -50px;
+  }
+}
