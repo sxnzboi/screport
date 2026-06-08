@@ -964,8 +964,9 @@ textarea.form-control {
   display: flex;
   gap: 12px;
   box-shadow: 0 -5px 15px rgba(0,0,0,0.03);
-  padding-bottom: env(safe-area-inset-bottom, 15px); /* Safe area for iPhone */
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); /* Extra padding at bottom */
 }
+
 
 .chat-input-area input {
   flex: 1;
