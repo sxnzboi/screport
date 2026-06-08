@@ -6,8 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
         'academic': 'การเรียนการสอน',
         'it': 'ระบบสารสนเทศ / อินเทอร์เน็ต',
         'services': 'บริการของมหาวิทยาลัย',
+        'behavior': 'พฤติกรรมไม่เหมาะสม',
         'other': 'อื่นๆ'
     };
+
+    // SECURITY: Helper to escape HTML and prevent XSS
+    function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
 
     // Global variable for uploaded image
     let uploadedImageBase64 = null;
@@ -166,7 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 for (let id in data) {
                     complaints.push({ firebaseId: id, ...data[id] });
                 }
-                // ลำดับจากใหม่ไปเก่า (เนื่องจากคีย์ Firebase อาจเรียงไม่ตรงเป๊ะ)
+                // SECURITY: filter to only show current user's own complaints
+                if (window.currentUserEmail) {
+                    complaints = complaints.filter(c => c.submitterEmail === window.currentUserEmail);
+                }
                 complaints.reverse();
                 currentComplaints = complaints;
                 renderDashboard(complaints);
@@ -227,27 +242,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Only show the chat button if the current user is the owner/submitter of this complaint
             const isMyComplaint = window.currentUserEmail && complaint.submitterEmail === window.currentUserEmail;
+            const safeFirebaseId = escapeHtml(complaint.firebaseId);
+            const titleEncoded = encodeURIComponent(complaint.title || '');
             const chatButtonHTML = isMyComplaint ? `
-                <button onclick="openChat('${complaint.firebaseId}', '${complaint.title.replace(/'/g, "\\'")}')" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 12px; background: rgba(79,70,229,0.1); color: var(--primary-color); border: 1px solid rgba(79,70,229,0.2); box-shadow: none;">
+                <button data-id="${safeFirebaseId}" data-title="${titleEncoded}" onclick="openChatFromCard(this)" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 12px; background: rgba(79,70,229,0.1); color: var(--primary-color); border: 1px solid rgba(79,70,229,0.2); box-shadow: none;">
                     <i class="fa-solid fa-comments"></i> แชท
                 </button>
             ` : '';
 
             card.innerHTML = `
                 <div class="complaint-info">
-                    <h4>${complaint.title}</h4>
+                    <h4>${escapeHtml(complaint.title)}</h4>
                     <div class="complaint-meta">
-                        <span><i class="fa-regular fa-calendar"></i> ${complaint.date}</span>
-                        <span><i class="fa-solid fa-tag"></i> ${complaint.category}</span>
-                        <span><i class="fa-solid fa-hashtag"></i> ${complaint.id}</span>
+                        <span><i class="fa-regular fa-calendar"></i> ${escapeHtml(complaint.date)}</span>
+                        <span><i class="fa-solid fa-tag"></i> ${escapeHtml(complaint.category)}</span>
+                        <span><i class="fa-solid fa-hashtag"></i> ${escapeHtml(complaint.id)}</span>
                         ${complaint.isAnonymous ? '<span><i class="fa-solid fa-mask"></i> ไม่ระบุตัวตน</span>' : ''}
                     </div>
-                    ${complaint.imageUrl ? `<div style="margin-top: 15px;"><img src="${complaint.imageUrl}" style="max-height: 120px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);"></div>` : ''}
+                    ${complaint.imageUrl ? `<div style="margin-top: 15px;"><img src="${escapeHtml(complaint.imageUrl)}" style="max-height: 120px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1);"></div>` : ''}
                     
                     ${complaint.adminReply ? `
                     <div style="margin-top: 15px; padding: 10px 15px; background: rgba(79, 70, 229, 0.05); border-left: 3px solid var(--primary-color); border-radius: 0 8px 8px 0;">
                         <div style="font-size: 0.75rem; font-weight: 700; color: var(--primary-color); margin-bottom: 4px;"><i class="fa-solid fa-reply"></i> ตอบกลับจากสภาฯ</div>
-                        <div style="font-size: 0.85rem; color: #4b5563; white-space: pre-line;">${complaint.adminReply}</div>
+                        <div style="font-size: 0.85rem; color: #4b5563; white-space: pre-line;">${escapeHtml(complaint.adminReply)}</div>
                     </div>
                     ` : ''}
                 </div>
@@ -506,6 +523,13 @@ document.addEventListener('DOMContentLoaded', () => {
         messagesContainer.appendChild(wrapper);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
+
+    // Helper: open chat from card button's data-attributes (XSS-safe)
+    window.openChatFromCard = function(btn) {
+        const id = btn.getAttribute('data-id');
+        const title = decodeURIComponent(btn.getAttribute('data-title') || '');
+        openChat(id, title);
+    };
 
     // Also close chat on Escape key
     document.addEventListener('keydown', (e) => {

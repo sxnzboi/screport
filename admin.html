@@ -125,7 +125,7 @@
     <nav>
         <div class="container glass nav-container">
             <div class="logo">
-                <i class="fa-solid fa-bullhorn"></i>
+                <img src="images/logo.png" alt="ReportCouncil logo" class="navbar-logo" style="height:24px; vertical-align:middle; border-radius: 4px;">
                 Report<span>Council</span> <span style="font-size: 0.75rem; background: var(--secondary-color); color: white; padding: 2px 8px; border-radius: 10px; margin-left: 5px;">ADMIN</span>
             </div>
             <div class="nav-links">
@@ -275,15 +275,39 @@
         let adminChartInstance = null;
         let currentAdminComplaints = [];
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const user = JSON.parse(localStorage.getItem('rep_user'));
-            if (!user || user.role !== 'admin') {
+        // ======================================================
+        // SECURITY: ใช้ Firebase Auth ตรวจสอบ session จริงๆ
+        // ไม่เชื่อ localStorage เพียงอย่างเดียว (bypassed ได้ง่าย)
+        // ======================================================
+        const ALLOWED_ADMIN_EMAILS = [
+            'admin@reportcouncil.psu.ac.th',
+            'council@psu.ac.th'
+            // เพิ่ม email admin ของคุณที่นี่ (ต้องตรงกับใน login.html)
+        ];
+
+        // Helper: escape HTML to prevent XSS
+        function escapeHtml(str) {
+            if (str == null) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user || !ALLOWED_ADMIN_EMAILS.includes(user.email)) {
+                // ไม่ใช่ admin ที่อนุญาต → redirect ออก
                 alert('คุณไม่มีสิทธิ์เข้าถึงหน้านี้ เฉพาะผู้ดูแลระบบเท่านั้น');
                 window.location.href = 'login.html';
                 return;
             }
 
-            document.getElementById('admin-name').textContent = user.username;
+            // แสดง display name
+            const localUser = JSON.parse(localStorage.getItem('rep_user'));
+            document.getElementById('admin-name').textContent = 
+                localUser ? localUser.username : user.email.split('@')[0];
 
             const filter = document.getElementById('adminChartFilter');
             if (filter) {
@@ -298,7 +322,7 @@
         function logout() {
             localStorage.removeItem('rep_user');
             if (firebaseAppInitialized) {
-                firebase.auth().signOut();
+                firebase.auth().signOut(); // sign out จาก Firebase Auth จริงๆ
             }
             window.location.href = 'login.html';
         }
@@ -354,6 +378,7 @@
                     'academic': 'การเรียนการสอน',
                     'it': 'ระบบสารสนเทศ / อินเทอร์เน็ต',
                     'services': 'บริการของมหาวิทยาลัย',
+                    'behavior': 'พฤติกรรมไม่เหมาะสม',
                     'other': 'อื่นๆ'
                 };
                 let counts = {};
@@ -421,35 +446,47 @@
 
             complaints.forEach((complaint, index) => {
                 const tr = document.createElement('tr');
+                const safeId = escapeHtml(complaint.firebaseId || index);
+                const safeTitle = escapeHtml(complaint.title);
+                const safeDesc = escapeHtml(complaint.description);
+                const safeCategory = escapeHtml(complaint.category);
+                const safeDate = escapeHtml(complaint.date);
+                const safeEmail = escapeHtml(complaint.submitterEmail || 'ไม่พบข้อมูล');
+                const safeAdminReply = escapeHtml(complaint.adminReply || '');
+                const safeStatus = escapeHtml(complaint.status);
+                // For button attributes - encode for data attributes
+                const titleAttr = encodeURIComponent(complaint.title || '');
+                const emailAttr = complaint.isAnonymous ? 'anonymous' : encodeURIComponent(complaint.submitterEmail || '');
+
                 tr.innerHTML = `
                     <td style="text-align: center; vertical-align: middle;" data-label="เลือก">
-                        <input type="checkbox" class="complaint-checkbox" value="${complaint.firebaseId || index}" onchange="updateExportButtonState()" style="width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary-color); vertical-align: middle;">
+                        <input type="checkbox" class="complaint-checkbox" value="${safeId}" onchange="updateExportButtonState()" style="width: 17px; height: 17px; cursor: pointer; accent-color: var(--primary-color); vertical-align: middle;">
                     </td>
-                    <td data-label="รหัสเรื่อง"><strong>${complaint.id}</strong></td>
+                    <td data-label="รหัสเรื่อง"><strong>${escapeHtml(complaint.id)}</strong></td>
                     <td data-label="รายละเอียด">
-                        <div><strong>${complaint.title}</strong></div>
-                        <div class="text-muted" style="font-size: 0.8rem;">${complaint.description || ''}</div>
-                        ${complaint.imageUrl ? `<div style="margin-top: 8px;"><img src="${complaint.imageUrl}" style="max-height: 80px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); cursor: pointer;" onclick="window.open('${complaint.imageUrl}', '_blank')"></div>` : ''}
+                        <div><strong>${safeTitle}</strong></div>
+                        <div class="text-muted" style="font-size: 0.8rem;">${safeDesc}</div>
+                        ${complaint.imageUrl ? `<div style="margin-top: 8px;"><img src="${escapeHtml(complaint.imageUrl)}" style="max-height: 80px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1); cursor: pointer;" onclick="window.open(this.src, '_blank')"></div>` : ''}
                         
                         <!-- Submitter Identity Section -->
                         <div style="margin-top: 8px; font-size: 0.8rem;">
                             ${complaint.isAnonymous ? 
                                 `<span style="background: rgba(107, 114, 128, 0.1); color: #4b5563; padding: 2px 6px; border-radius: 4px; font-weight: 500;"><i class="fa-solid fa-user-secret"></i> ไม่ระบุตัวตน (Anonymous)</span>` : 
-                                `<span style="background: rgba(16, 185, 129, 0.1); color: #059669; padding: 2px 6px; border-radius: 4px; font-weight: 500;"><i class="fa-solid fa-envelope"></i> ผู้ร้องเรียน: ${complaint.submitterEmail || 'ไม่พบข้อมูล'}</span>`
+                                `<span style="background: rgba(16, 185, 129, 0.1); color: #059669; padding: 2px 6px; border-radius: 4px; font-weight: 500;"><i class="fa-solid fa-envelope"></i> ผู้ร้องเรียน: ${safeEmail}</span>`
                             }
                         </div>
 
                         <!-- Admin Reply Section -->
                         <div style="margin-top: 15px; padding-top: 10px; border-top: 1px dashed rgba(0,0,0,0.1);">
                             <div style="font-size: 0.8rem; font-weight: 600; margin-bottom: 5px; color: var(--primary-color);"><i class="fa-solid fa-reply"></i> ตอบกลับจากสภา</div>
-                            <textarea id="reply-${complaint.firebaseId || index}" style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.8rem; padding: 6px; min-height: 50px; margin-bottom: 5px; outline: none;" placeholder="พิมพ์ข้อความตอบกลับถึงผู้ร้องเรียน...">${complaint.adminReply || ''}</textarea>
-                            <button class="btn btn-primary" style="font-size: 0.75rem; padding: 4px 10px;" onclick="saveReply('${complaint.firebaseId || index}')">บันทึกข้อความ</button>
+                            <textarea id="reply-${safeId}" style="width: 100%; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.8rem; padding: 6px; min-height: 50px; margin-bottom: 5px; outline: none;" placeholder="พิมพ์ข้อความตอบกลับถึงผู้ร้องเรียน...">${safeAdminReply}</textarea>
+                            <button class="btn btn-primary" style="font-size: 0.75rem; padding: 4px 10px;" onclick="saveReply('${safeId}')">บันทึกข้อความ</button>
                         </div>
                     </td>
-                    <td data-label="หมวดหมู่">${complaint.category}</td>
-                    <td data-label="วันที่แจ้ง">${complaint.date}</td>
+                    <td data-label="หมวดหมู่">${safeCategory}</td>
+                    <td data-label="วันที่แจ้ง">${safeDate}</td>
                     <td data-label="สถานะ">
-                        <select class="badge-select ${complaint.status}" onchange="updateStatus('${complaint.firebaseId || index}', this.value)">
+                        <select class="badge-select ${safeStatus}" onchange="updateStatus('${safeId}', this.value)">
                             <option value="pending" ${complaint.status === 'pending' ? 'selected' : ''}>รอดำเนินการ</option>
                             <option value="progress" ${complaint.status === 'progress' ? 'selected' : ''}>กำลังดำเนินการ</option>
                             <option value="resolved" ${complaint.status === 'resolved' ? 'selected' : ''}>แก้ไขแล้ว</option>
@@ -458,10 +495,10 @@
                     </td>
                     <td data-label="การจัดการ">
                         <div style="display: flex; gap: 8px; flex-direction: column;">
-                            <button onclick="openChat('${complaint.firebaseId || index}', '${complaint.title.replace(/'/g, "\\'")}', '${(complaint.isAnonymous ? 'anonymous' : (complaint.submitterEmail || 'ไม่พบข้อมูล')).replace(/'/g, "\\'")}')" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(79,70,229,0.1); color: var(--primary-color); border: 1px solid rgba(79,70,229,0.2); box-shadow: none; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                            <button data-complaint-id="${safeId}" data-title="${titleAttr}" data-email="${emailAttr}" onclick="openChatFromBtn(this)" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(79,70,229,0.1); color: var(--primary-color); border: 1px solid rgba(79,70,229,0.2); box-shadow: none; display: flex; align-items: center; justify-content: center; gap: 5px;">
                                 <i class="fa-solid fa-comments"></i> แชท
                             </button>
-                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); display: flex; align-items: center; justify-content: center; gap: 5px;" onclick="deleteComplaint('${complaint.firebaseId || index}')">
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.2); display: flex; align-items: center; justify-content: center; gap: 5px;" onclick="deleteComplaint('${safeId}')">
                                 <i class="fa-solid fa-trash"></i> ลบ
                             </button>
                         </div>
@@ -695,6 +732,14 @@
            ========================================= */
         let currentChatId = null;
         let chatListenerRef = null;
+
+        // Helper: open chat from button's data-attributes (XSS-safe, no inline JS injection)
+        window.openChatFromBtn = function(btn) {
+            const complaintId = btn.getAttribute('data-complaint-id');
+            const title = decodeURIComponent(btn.getAttribute('data-title') || '');
+            const email = decodeURIComponent(btn.getAttribute('data-email') || '');
+            openChat(complaintId, title, email);
+        };
 
         window.openChat = function(complaintId, title, studentEmail) {
             currentChatId = complaintId;

@@ -194,7 +194,7 @@
                 <i class="fa-solid fa-arrow-left"></i>
             </a>
             <div class="logo nav-logo-center">
-                <i class="fa-solid fa-bullhorn"></i>
+                <img src="images/logo.png" alt="ReportCouncil logo" class="navbar-logo" style="height:24px; vertical-align:middle; border-radius: 4px;">
                 Report<span>Council</span>
             </div>
             <div class="nav-links">
@@ -332,8 +332,11 @@
             }
         }
 
-        // Redirect destination (where user came from)
-        const redirectTo = new URLSearchParams(window.location.search).get('redirect') || 'submit.html';
+        // SECURITY: Whitelist-only redirect to prevent Open Redirect attacks
+        // ตัวอย่าง: ?redirect=http://evil.com จะถูก block
+        const ALLOWED_REDIRECTS = ['submit.html', 'dashboard.html', 'index.html'];
+        const rawRedirect = new URLSearchParams(window.location.search).get('redirect') || 'submit.html';
+        const redirectTo = ALLOWED_REDIRECTS.includes(rawRedirect) ? rawRedirect : 'submit.html';
 
         // Check if already logged in
         firebase.auth().onAuthStateChanged(user => {
