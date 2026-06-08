@@ -25,27 +25,27 @@
             width: 90px;
             height: 90px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, var(--primary-color), #7c3aed);
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 20px;
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 8px 25px rgba(79, 70, 229, 0.3);
         }
         .login-header .icon-circle i {
             font-size: 2.2rem;
             color: white;
         }
         .login-header h1 {
-            background: linear-gradient(135deg, var(--text-main), #10b981);
+            background: linear-gradient(135deg, var(--text-main), var(--primary-color));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-size: 1.8rem;
         }
         .login-badge {
             display: inline-block;
-            background: rgba(16,185,129,0.1);
-            color: #10b981;
+            background: rgba(79,70,229,0.1);
+            color: var(--primary-color);
             font-size: 0.75rem;
             font-weight: 700;
             padding: 4px 12px;
@@ -111,8 +111,8 @@
             transition: border-color 0.3s;
         }
         .email-input-group:focus-within {
-            border-color: #10b981;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
         }
         .email-input-group input {
             flex: 1;
@@ -127,8 +127,8 @@
         .email-domain {
             flex-shrink: 0; /* Prevent the domain part from being squeezed */
             padding: 14px 16px;
-            background: rgba(16, 185, 129, 0.08);
-            color: #059669;
+            background: rgba(79, 70, 229, 0.08);
+            color: var(--primary-color);
             font-weight: 600;
             font-size: 0.95rem;
             white-space: nowrap;
@@ -136,13 +136,13 @@
         }
 
         .btn-user-primary {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, var(--primary-color), #7c3aed);
             color: white;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.3);
         }
         .btn-user-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.4);
             color: white;
         }
 
@@ -167,12 +167,12 @@
             text-align: center;
             margin-top: 20px;
             padding: 15px;
-            background: rgba(16, 185, 129, 0.05);
+            background: rgba(79, 70, 229, 0.05);
             border-radius: 12px;
-            border: 1px dashed rgba(16, 185, 129, 0.2);
+            border: 1px dashed rgba(79, 70, 229, 0.2);
         }
         .psu-info i {
-            color: #10b981;
+            color: var(--primary-color);
         }
         .psu-info p {
             font-size: 0.82rem;
