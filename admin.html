@@ -657,13 +657,13 @@
                             </div>
 
                             <!-- Description -->
-                            <div style="font-size: 0.8rem; color: #4b5563; line-height: 1.6; word-break: break-word; white-space: pre-wrap; margin-bottom: 4px; max-height: 4.8em; overflow: hidden;">
+                            <div style="font-size: 0.8rem; color: #4b5563; line-height: 1.8; word-wrap: break-word; white-space: normal; margin-bottom: 4px;">
                                 ${escapeHtml(comp.description || 'ไม่มีรายละเอียดเพิ่มเติม')}
                             </div>
 
                             <!-- Council Reply (Compact) -->
                             ${comp.adminReply ? `
-                            <div style="padding: 5px 8px; background: rgba(79, 70, 229, 0.03); border-left: 3px solid #4f46e5; border-radius: 0 6px 6px 0; font-size: 0.75rem; color: #374151; margin-top: 4px; word-break: break-word; white-space: pre-wrap; line-height: 1.5; max-height: 3em; overflow: hidden;">
+                            <div style="padding: 5px 8px; background: rgba(79, 70, 229, 0.03); border-left: 3px solid #4f46e5; border-radius: 0 6px 6px 0; font-size: 0.75rem; color: #374151; margin-top: 4px; word-wrap: break-word; white-space: normal; line-height: 1.6;">
                                 <strong>ตอบกลับ:</strong> ${escapeHtml(comp.adminReply)}
                             </div>
                             ` : ''}
