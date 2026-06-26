@@ -101,24 +101,45 @@ document.addEventListener('DOMContentLoaded', () => {
             const newComplaint = {
                 id,
                 title,
-                category: categoryMap[category] || category,
+                category: category, // เก็บค่า key เพื่อ filter ได้ถูกต้อง
+                categoryLabel: categoryMap[category] || category, // เก็บ label สำหรับแสดงผล
                 location,
                 description,
                 isAnonymous,
                 date,
-                imageUrl: uploadedImageBase64,
+                imageUrl: uploadedImageBase64 || null,
                 submitterEmail: window.currentUserEmail || '',
                 status: 'pending' // pending, progress, resolved
             };
             
             // Save to Firebase or LocalStorage
             if (typeof firebaseAppInitialized !== 'undefined' && firebaseAppInitialized) {
-                firebase.database().ref('complaints/' + id).set(newComplaint).then(() => {
-                    finishSubmit();
-                }).catch(error => {
-                    console.error("Error saving complaint: ", error);
-                    alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง");
-                });
+                // แยก imageUrl ออกมาก่อน เพราะ base64 อาจมีขนาดใหญ่เกินไป
+                const { imageUrl, ...complaintWithoutImage } = newComplaint;
+                
+                firebase.database().ref('complaints/' + id).set(complaintWithoutImage)
+                    .then(() => {
+                        // บันทึก image แยกต่างหาก (ถ้ามี)
+                        if (imageUrl) {
+                            return firebase.database().ref('complaints/' + id + '/imageUrl').set(imageUrl);
+                        }
+                    })
+                    .then(() => {
+                        finishSubmit();
+                    })
+                    .catch(error => {
+                        console.error("Error saving complaint: ", error);
+                        console.error("Error code: ", error.code);
+                        console.error("Error message: ", error.message);
+                        
+                        let msg = "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง";
+                        if (error.code === 'PERMISSION_DENIED') {
+                            msg = "ไม่มีสิทธิ์บันทึกข้อมูล กรุณาเข้าสู่ระบบก่อนส่งคำร้องเรียน";
+                        } else if (error.message) {
+                            msg += "\n(" + error.message + ")";
+                        }
+                        alert(msg);
+                    });
             } else {
                 let complaints = JSON.parse(localStorage.getItem('university_complaints')) || [];
                 complaints.unshift(newComplaint); // Add to beginning
