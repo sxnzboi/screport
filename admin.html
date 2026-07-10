@@ -585,7 +585,7 @@
             }
         }
 
-        function exportSelectedPDF() {
+        async function exportSelectedPDF() {
             const selectedCheckboxes = document.querySelectorAll('.complaint-checkbox:checked');
             if (selectedCheckboxes.length === 0) {
                 alert('กรุณาเลือกเรื่องร้องเรียนที่ต้องการดาวน์โหลด');
@@ -605,18 +605,41 @@
                 return;
             }
 
-            // Create temporary container for PDF generation inside DOM
-            const element = document.createElement('div');
-            element.style.position = 'relative';
-            element.style.width = '700px'; // 700px is safe and fits A4 nicely with margins, avoiding right-side clipping
-            element.style.boxSizing = 'border-box';
-            element.style.padding = '20px 10px';
-            element.style.background = '#ffffff';
-            element.style.color = '#1f2937';
-            element.style.fontFamily = "'Kanit', sans-serif";
+            // Loading feedback on the button
+            const btn = document.getElementById('btnExportPDF');
+            const origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> กำลังเตรียมเอกสาร...`;
 
-            // Start empty html content
-            let htmlContent = '';
+            // Start HTML document for the iframe
+            let htmlContent = `
+            <!DOCTYPE html>
+            <html lang="th">
+            <head>
+                <meta charset="UTF-8">
+                <title>ReportCouncil Report</title>
+                <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@400;500;700;800&display=swap" rel="stylesheet">
+                <style>
+                    body {
+                        font-family: 'Kanit', sans-serif;
+                        color: #1f2937;
+                        background: #ffffff;
+                        margin: 0;
+                        padding: 0;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+                    @page {
+                        size: A4 portrait;
+                        margin: 15mm 15mm;
+                    }
+                    * { box-sizing: border-box; }
+                    .page-break { page-break-before: always; }
+                    .complaint-container { width: 100%; max-width: 800px; margin: 0 auto; }
+                </style>
+            </head>
+            <body>
+            `;
 
             complaintsToExport.forEach((comp, idx) => {
                 const isAnon = comp.isAnonymous;
@@ -630,18 +653,18 @@
                 else { statusLabel = 'คำขอถูกยกเลิก'; statusColor = '#ef4444'; }
 
                 htmlContent += `
-                    <div style="${idx > 0 ? 'page-break-before: always;' : ''} padding: 10px; font-family: 'Kanit', sans-serif; width: 100%; box-sizing: border-box;">
+                    <div class="complaint-container ${idx > 0 ? 'page-break' : ''}">
                         
-                        <!-- Header (Repeated on each page) -->
-                        <div style="text-align: center; border-bottom: 2px solid #4f46e5; padding-bottom: 12px; margin-bottom: 25px;">
+                        <!-- Header -->
+                        <div style="text-align: center; border-bottom: 2px solid #4f46e5; padding-bottom: 12px; margin-bottom: 25px; margin-top: 20px;">
                             <div style="font-size: 1.8rem; font-weight: 800; color: #4f46e5;">ReportCouncil Report</div>
                             <div style="font-size: 0.9rem; color: #6b7280; margin-top: 5px;">รายงานเรื่องร้องเรียนรหัส: ${comp.id} | วันที่ออกเอกสาร: ${new Date().toLocaleDateString('th-TH')}</div>
                         </div>
 
-                        <!-- Image (Large, Top) -->
+                        <!-- Image -->
                         ${comp.imageUrl ? `
                         <div style="width: 100%; display: flex; justify-content: center; margin-bottom: 25px;">
-                            <img src="${comp.imageUrl}" style="max-width: 100%; max-height: 400px; border-radius: 12px; border: 1px solid #e5e7eb; object-fit: contain; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                            <img src="${comp.imageUrl}" style="max-width: 100%; max-height: 400px; border-radius: 12px; border: 1px solid #e5e7eb; object-fit: contain;">
                         </div>
                         ` : `
                         <div style="width: 100%; height: 120px; display: flex; align-items: center; justify-content: center; background: #f3f4f6; border-radius: 12px; margin-bottom: 25px; color: #9ca3af; font-size: 1rem; border: 1px dashed #d1d5db;">
@@ -649,34 +672,29 @@
                         </div>
                         `}
 
-                        <!-- Details (Below Image) -->
-                        <div style="padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background: #ffffff; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);">
-                            <!-- Top Bar: ID, Status, Date -->
+                        <!-- Details -->
+                        <div style="padding: 25px; border: 1px solid #e5e7eb; border-radius: 16px; background: #ffffff;">
                             <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; flex-wrap: wrap;">
                                 <span style="font-size: 1rem; font-weight: 700; color: #4f46e5; background: rgba(79, 70, 229, 0.1); padding: 4px 10px; border-radius: 6px;">${comp.id}</span>
                                 <span style="background: ${statusColor}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.9rem; font-weight: 700;">${statusLabel}</span>
                                 <span style="font-size: 0.9rem; color: #6b7280; margin-left: auto;">วันที่แจ้ง: ${comp.date}</span>
                             </div>
 
-                            <!-- Title -->
-                            <h3 style="font-size: 1.4rem; font-weight: 700; color: #111827; margin: 0 0 12px 0; line-height: 1.4; word-break: break-word; white-space: normal;">${escapeHtml(comp.title)}</h3>
+                            <h3 style="font-size: 1.4rem; font-weight: 700; color: #111827; margin: 0 0 12px 0; line-height: 1.4;">${escapeHtml(comp.title)}</h3>
 
-                            <!-- Metadata Line -->
-                            <div style="font-size: 1rem; color: #4b5563; margin-bottom: 20px; word-break: break-word; white-space: normal; line-height: 1.6; border-bottom: 1px dashed #d1d5db; padding-bottom: 16px;">
+                            <div style="font-size: 1rem; color: #4b5563; margin-bottom: 20px; line-height: 1.6; border-bottom: 1px dashed #d1d5db; padding-bottom: 16px;">
                                 <strong>หมวดหมู่:</strong> ${escapeHtml(comp.categoryLabel || comp.category)} <br>
                                 <strong>สถานที่:</strong> ${escapeHtml(comp.location || 'ไม่ระบุ')} <br>
                                 <strong>ผู้ร้องเรียน:</strong> ${escapeHtml(submitter)}
                             </div>
 
-                            <!-- Description -->
-                            <div style="font-size: 1.05rem; color: #374151; line-height: 1.8; word-wrap: break-word; white-space: normal; margin-bottom: 20px;">
+                            <div style="font-size: 1.05rem; color: #374151; line-height: 1.8; margin-bottom: 20px;">
                                 <strong style="color: #111827; font-size: 1.1rem; display: block; margin-bottom: 8px;">รายละเอียด:</strong>
                                 ${escapeHtml(comp.description || 'ไม่มีรายละเอียดเพิ่มเติม')}
                             </div>
 
-                            <!-- Council Reply -->
                             ${comp.adminReply ? `
-                            <div style="padding: 16px 20px; background: rgba(79, 70, 229, 0.05); border-left: 4px solid #4f46e5; border-radius: 0 12px 12px 0; font-size: 1.05rem; color: #1f2937; word-wrap: break-word; white-space: normal; line-height: 1.7;">
+                            <div style="padding: 16px 20px; background: rgba(79, 70, 229, 0.05); border-left: 4px solid #4f46e5; border-radius: 0 12px 12px 0; font-size: 1.05rem; color: #1f2937; line-height: 1.7;">
                                 <strong style="color: #4f46e5; display: block; margin-bottom: 6px;">สภานักศึกษาตอบกลับ:</strong>
                                 ${escapeHtml(comp.adminReply)}
                             </div>
@@ -686,52 +704,41 @@
                 `;
             });
 
-            element.innerHTML = htmlContent;
+            htmlContent += `</body></html>`;
 
-            // Page break stylesheet injection
-            const style = document.createElement('style');
-            style.innerHTML = `
-                .pdf-page-break {
-                    page-break-before: always;
-                }
-            `;
-            element.appendChild(style);
+            // Create a hidden iframe
+            const printFrame = document.createElement('iframe');
+            printFrame.style.position = 'fixed';
+            printFrame.style.right = '0';
+            printFrame.style.bottom = '0';
+            printFrame.style.width = '0';
+            printFrame.style.height = '0';
+            printFrame.style.border = 'none';
+            document.body.appendChild(printFrame);
 
-            // Temporarily append the element to body so DOM measurements and font loading are accurate
-            document.body.appendChild(element);
+            // Write HTML to the iframe
+            printFrame.contentWindow.document.open();
+            printFrame.contentWindow.document.write(htmlContent);
+            printFrame.contentWindow.document.close();
 
-            // Configure html2pdf options (using 10mm margins for extra printable height)
-            const opt = {
-                margin:       [10, 10, 10, 10], // top, left, bottom, right
-                filename:     `ReportCouncil_Report_${new Date().toISOString().slice(0,10)}.pdf`,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, letterRendering: false, scrollY: 0 },
-                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak:    { mode: ['css', 'legacy'] }
+            // Wait for images and fonts to load before printing
+            printFrame.onload = function() {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
+                    updateExportButtonState();
+                    
+                    printFrame.contentWindow.focus();
+                    printFrame.contentWindow.print();
+                    
+                    // Cleanup iframe after print dialog is closed
+                    setTimeout(() => {
+                        if (document.body.contains(printFrame)) {
+                            document.body.removeChild(printFrame);
+                        }
+                    }, 2000);
+                }, 800); // short delay to ensure rendering
             };
-
-            // Loading feedback on the button
-            const btn = document.getElementById('btnExportPDF');
-            const origText = btn.innerHTML;
-            btn.disabled = true;
-            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> กำลังสร้าง PDF...`;
-
-            // Run html2pdf
-            html2pdf().set(opt).from(element).save()
-                .then(() => {
-                    document.body.removeChild(element); // Clean up DOM
-                    btn.disabled = false;
-                    updateExportButtonState();
-                })
-                .catch(err => {
-                    console.error("PDF Export error:", err);
-                    alert("เกิดข้อผิดพลาดในการส่งออก PDF: " + err);
-                    if (document.body.contains(element)) {
-                        document.body.removeChild(element); // Clean up DOM
-                    }
-                    btn.disabled = false;
-                    updateExportButtonState();
-                });
         }
 
         /* =========================================
