@@ -114,16 +114,37 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Save to Firebase or LocalStorage
             if (typeof firebaseAppInitialized !== 'undefined' && firebaseAppInitialized) {
-                // แยก imageUrl ออกมาก่อน เพราะ base64 อาจมีขนาดใหญ่เกินไป
                 const { imageUrl, ...complaintWithoutImage } = newComplaint;
                 
-                firebase.database().ref('complaints/' + id).set(complaintWithoutImage)
-                    .then(() => {
-                        // บันทึก image แยกต่างหาก (ถ้ามี)
-                        if (imageUrl) {
-                            return firebase.database().ref('complaints/' + id + '/imageUrl').set(imageUrl);
-                        }
-                    })
+                // Show loading state on button
+                const submitBtn = complaintForm.querySelector('button[type="submit"]');
+                const origBtnText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังบันทึกข้อมูล...';
+
+                // Helper to save complaint to DB
+                const saveToDb = (downloadUrl = null) => {
+                    const finalComplaint = { ...complaintWithoutImage };
+                    if (downloadUrl) {
+                        finalComplaint.imageUrl = downloadUrl;
+                    }
+                    return firebase.database().ref('complaints/' + id).set(finalComplaint);
+                };
+
+                let uploadPromise = Promise.resolve(null);
+                
+                // If there's an image, upload to Storage first
+                if (imageUrl) {
+                    const storageRef = firebase.storage().ref();
+                    const imageRef = storageRef.child('complaints/' + id + '_' + Date.now() + '.jpg');
+                    
+                    // Upload Base64 string
+                    uploadPromise = imageRef.putString(imageUrl, 'data_url')
+                        .then(snapshot => snapshot.ref.getDownloadURL());
+                }
+
+                uploadPromise
+                    .then(downloadUrl => saveToDb(downloadUrl))
                     .then(() => {
                         finishSubmit();
                     })
@@ -133,12 +154,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.error("Error message: ", error.message);
                         
                         let msg = "เกิดข้อผิดพลาดในการบันทึกข้อมูล กรุณาลองใหม่อีกครั้ง";
-                        if (error.code === 'PERMISSION_DENIED') {
-                            msg = "ไม่มีสิทธิ์บันทึกข้อมูล กรุณาเข้าสู่ระบบก่อนส่งคำร้องเรียน";
+                        if (error.code === 'PERMISSION_DENIED' || error.code === 'storage/unauthorized') {
+                            msg = "ไม่มีสิทธิ์บันทึกข้อมูล กรุณาเข้าสู่ระบบก่อนส่งคำร้องเรียน (หรือติดปัญหา Permission)";
                         } else if (error.message) {
                             msg += "\n(" + error.message + ")";
                         }
                         alert(msg);
+                        
+                        // Restore button
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = origBtnText;
                     });
             } else {
                 let complaints = JSON.parse(localStorage.getItem('university_complaints')) || [];
@@ -193,7 +218,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadComplaints() {
         if (typeof firebaseAppInitialized !== 'undefined' && firebaseAppInitialized) {
-            firebase.database().ref('complaints').on('value', (snapshot) => {
+            // SECURITY & PERF: ดึงข้อมูลแค่ 50 รายการล่าสุด ป้องกันการโหลดหนัก
+            firebase.database().ref('complaints').orderByKey().limitToLast(50).on('value', (snapshot) => {
                 const data = snapshot.val();
                 let complaints = [];
                 for (let id in data) {

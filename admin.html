@@ -269,6 +269,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-storage-compat.js"></script>
     <script src="firebase-config.js"></script>
 
     <script>
@@ -331,7 +332,8 @@
             const tbody = document.getElementById('adminComplaintsTable');
 
             if (firebaseAppInitialized) {
-                firebase.database().ref('complaints').on('value', (snapshot) => {
+                // SECURITY & PERF: ดึงข้อมูลแค่ 50 รายการล่าสุด ป้องกันการโหลดหนัก
+                firebase.database().ref('complaints').orderByKey().limitToLast(50).on('value', (snapshot) => {
                     const data = snapshot.val();
                     const complaints = [];
                     for (let id in data) {
@@ -703,7 +705,7 @@
                 margin:       [10, 10, 10, 10], // top, left, bottom, right
                 filename:     `ReportCouncil_Report_${new Date().toISOString().slice(0,10)}.pdf`,
                 image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+                html2canvas:  { scale: 2, useCORS: true, letterRendering: false, scrollY: 0 },
                 jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
                 pagebreak:    { mode: ['css', 'legacy'] }
             };
